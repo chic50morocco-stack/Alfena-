@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ALFENA FASHION</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --crimson:#A50020;--crimson-dark:#7D0018;--crimson-deep:#3D000B;
+  --gold:#C9A84C;--white:#fff;--off:#FAF8F6;--gray:#F0EDED;--mid:#C8C4C4;--txt:#6B6464;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Montserrat',sans-serif;background:var(--white);color:var(--crimson-deep);overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:68px;background:rgba(255,255,255,0.96);backdrop-filter:blur(8px);border-bottom:1px solid rgba(165,0,32,0.1)}
+nav.scrolled{box-shadow:0 2px 24px rgba(165,0,32,0.08)}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;letter-spacing:0.18em;color:var(--crimson);text-decoration:none;display:flex;flex-direction:column;line-height:1}
+.nav-logo span{font-size:8px;letter-spacing:0.45em;color:var(--crimson-dark);font-family:'Montserrat',sans-serif;font-weight:500;margin-top:3px}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{font-size:10px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:var(--crimson-deep);text-decoration:none;transition:color 0.2s}
+.nav-links a:hover{color:var(--crimson)}
+.nav-actions{display:flex;gap:16px;align-items:center}
+.nav-actions button{background:none;border:none;cursor:pointer;color:var(--crimson-deep);font-size:17px;padding:4px;transition:color 0.2s}
+.nav-actions button:hover{color:var(--crimson)}
+
+/* HERO */
+.hero{margin-top:68px;min-height:calc(100vh - 68px);background:var(--crimson);display:flex;flex-direction:column;justify-content:center;padding:60px 32px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-100px;top:-100px;width:500px;height:500px;border-radius:50%;background:rgba(255,255,255,0.04)}
+.hero-eyebrow{font-size:9px;font-weight:500;letter-spacing:0.5em;text-transform:uppercase;opacity:0.6;color:white;margin-bottom:20px}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,12vw,80px);font-weight:300;line-height:1.05;color:white;margin-bottom:24px}
+.hero-title em{font-style:italic}
+.hero-sub{font-size:13px;font-weight:300;line-height:1.8;opacity:0.8;color:white;max-width:340px;margin-bottom:40px}
+.hero-cta{display:flex;gap:12px}
+.btn-primary{background:var(--white);color:var(--crimson);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;border:none;padding:15px 20px;cursor:pointer;transition:all 0.2s;flex:1;text-align:center;line-height:1.4}
+.btn-primary:hover{background:var(--off);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:white;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;border:1px solid rgba(255,255,255,0.5);padding:15px 20px;cursor:pointer;transition:all 0.2s;flex:1;text-align:center;line-height:1.4}
+.btn-outline:hover{border-color:white;background:rgba(255,255,255,0.08)}
+.hero-scroll{position:absolute;bottom:24px;left:32px;display:flex;align-items:center;gap:10px;color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:0.3em;text-transform:uppercase}
+.hero-line{width:32px;height:1px;background:rgba(255,255,255,0.3)}
+
+/* MARQUEE */
+.marquee{background:var(--crimson-deep);padding:12px 0;overflow:hidden}
+.marquee-track{display:flex;animation:marquee 20s linear infinite;white-space:nowrap}
+.marquee-track span{font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:white;padding:0 32px;border-right:1px solid rgba(255,255,255,0.15)}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* SECTIONS */
+section{padding:80px 32px}
+.section-header{text-align:center;margin-bottom:48px}
+.eyebrow{font-size:9px;font-weight:500;letter-spacing:0.5em;text-transform:uppercase;color:var(--crimson);margin-bottom:12px}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,8vw,48px);font-weight:300;color:var(--crimson-deep)}
+
+/* TABS */
+.collection-tabs{background:white}
+.tabs-nav{display:flex;justify-content:center;margin-bottom:40px;border-bottom:1px solid var(--gray)}
+.tab-btn{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;background:none;border:none;padding:14px 28px;cursor:pointer;color:var(--txt);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s;line-height:1.5;text-align:center}
+.tab-btn.active{color:var(--crimson);border-bottom-color:var(--crimson)}
+.tab-btn.trad.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* PRODUCTS */
+.products-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.product-card{cursor:pointer}
+.product-image{aspect-ratio:3/4;overflow:hidden;position:relative;background:var(--gray);margin-bottom:12px}
+.product-img{width:100%;height:100%;object-fit:cover;transition:transform 0.5s ease}
+.product-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;background:var(--gray);transition:transform 0.5s ease}
+.product-card:hover .product-img,.product-card:hover .product-placeholder{transform:scale(1.05)}
+.product-badge{position:absolute;top:10px;left:10px;background:var(--crimson);color:white;font-size:8px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;padding:4px 8px}
+.trad-badge{position:absolute;top:10px;left:10px;background:var(--gold);color:white;font-size:8px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;padding:4px 8px}
+.product-add{position:absolute;bottom:10px;right:10px;background:white;color:var(--crimson);border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;opacity:0;transform:translateY(6px);transition:all 0.3s;box-shadow:0 2px 10px rgba(0,0,0,0.1)}
+.product-card:hover .product-add{opacity:1;transform:translateY(0)}
+.product-cat{font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--txt);margin-bottom:4px}
+.product-name{font-size:12px;font-weight:500;color:var(--crimson-deep);margin-bottom:4px}
+.product-price{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;color:var(--crimson)}
+.empty-state{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--txt);font-size:13px;line-height:1.8}
+
+/* ORDER */
+.order-section{background:var(--off)}
+.order-box{background:white;padding:32px;box-shadow:0 4px 24px rgba(165,0,32,0.07);display:flex;flex-direction:column;gap:16px;max-width:500px;margin:0 auto}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:9px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--crimson-deep)}
+.form-group input,.form-group select,.form-group textarea{padding:12px 14px;border:1px solid var(--gray);font-family:'Montserrat',sans-serif;font-size:12px;color:var(--crimson-deep);outline:none;background:var(--off);transition:border-color 0.2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--crimson)}
+.form-group textarea{resize:vertical;min-height:70px}
+.size-btns{display:flex;gap:6px;flex-wrap:wrap}
+.size-btn{padding:7px 12px;border:1px solid var(--gray);background:white;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;color:var(--crimson-deep);transition:all 0.2s}
+.size-btn:hover,.size-btn.active{background:var(--crimson);color:white;border-color:var(--crimson)}
+.wa-btn{background:#25D366;color:white;border:none;padding:16px;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s}
+.wa-btn:hover{background:#1db954;transform:translateY(-1px)}
+
+/* NEWSLETTER */
+.newsletter{background:var(--crimson-deep);text-align:center;padding:80px 32px}
+.newsletter .section-title{color:white;margin-bottom:12px}
+.newsletter p{color:rgba(255,255,255,0.55);font-size:12px;margin-bottom:32px}
+.nl-form{display:flex;max-width:440px;margin:0 auto}
+.nl-form input{flex:1;padding:14px 18px;border:1px solid rgba(255,255,255,0.15);border-right:none;background:rgba(255,255,255,0.05);color:white;font-family:'Montserrat',sans-serif;font-size:12px;outline:none}
+.nl-form input::placeholder{color:rgba(255,255,255,0.3)}
+.nl-form button{background:var(--crimson);color:white;border:none;padding:14px 20px;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase}
+
+/* FOOTER */
+footer{background:var(--crimson-deep);color:rgba(255,255,255,0.45);padding:40px 32px;border-top:1px solid rgba(255,255,255,0.06)}
+.footer-logo{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;letter-spacing:0.18em;color:rgba(255,255,255,0.85);display:flex;flex-direction:column;line-height:1;margin-bottom:12px}
+.footer-logo span{font-size:8px;letter-spacing:0.45em;color:rgba(255,255,255,0.35);font-family:'Montserrat',sans-serif;margin-top:3px}
+footer p{font-size:11px;line-height:1.8;margin-bottom:20px}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:24px}
+.footer-links a{font-size:10px;color:rgba(255,255,255,0.35);text-decoration:none;letter-spacing:0.1em;transition:color 0.2s}
+.footer-links a:hover{color:white}
+.footer-bottom{border-top:1px solid rgba(255,255,255,0.06);padding-top:20px;font-size:10px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;z-index:300;background:var(--crimson-deep);color:white;padding:14px 20px;font-size:11px;border-left:3px solid var(--crimson);transform:translateY(60px);opacity:0;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* ═══════════════════════════════
+   ADMIN PANEL
+═══════════════════════════════ */
+.admin-wrap{display:none;min-height:100vh;background:var(--off)}
+
+/* Admin Login */
+.admin-login{position:fixed;inset:0;background:var(--crimson);display:flex;align-items:center;justify-content:center;z-index:500}
+.admin-login.hidden{display:none}
+.login-box{background:white;padding:40px;width:320px;text-align:center}
+.login-logo{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;letter-spacing:0.2em;color:var(--crimson)}
+.login-sub{font-size:8px;letter-spacing:0.4em;color:var(--txt);margin-bottom:28px;margin-top:2px}
+.login-box input{width:100%;padding:13px 14px;border:1px solid var(--gray);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;margin-bottom:10px}
+.login-box input:focus{border-color:var(--crimson)}
+.login-btn{width:100%;background:var(--crimson);color:white;border:none;padding:14px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;cursor:pointer}
+.login-err{color:var(--crimson);font-size:11px;margin-top:8px;min-height:16px}
+
+/* Admin Layout */
+.admin-header{background:var(--crimson-deep);color:white;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.admin-header-logo{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;letter-spacing:0.2em}
+.admin-header-logo span{font-size:7px;letter-spacing:0.4em;display:block;opacity:0.4;font-family:'Montserrat',sans-serif;margin-top:1px}
+.admin-nav{display:flex;gap:4px}
+.admin-nav-btn{background:none;border:none;color:rgba(255,255,255,0.5);font-family:'Montserrat',sans-serif;font-size:9px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;padding:8px 14px;cursor:pointer;transition:all 0.2s;border-radius:2px}
+.admin-nav-btn:hover,.admin-nav-btn.active{background:rgba(255,255,255,0.1);color:white}
+.admin-content{padding:24px}
+
+/* Admin Pages */
+.admin-page{display:none}
+.admin-page.active{display:block}
+.admin-page-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--crimson-deep);margin-bottom:4px}
+.admin-page-sub{font-size:11px;color:var(--txt);margin-bottom:24px}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.stat{background:white;padding:20px;border-left:3px solid var(--crimson)}
+.stat.gold{border-left-color:var(--gold)}
+.stat-n{font-family:'Cormorant Garamond',serif;font-size:40px;font-weight:300;color:var(--crimson);line-height:1}
+.stat.gold .stat-n{color:var(--gold)}
+.stat-l{font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--txt);margin-top:4px}
+
+/* Add form */
+.admin-card{background:white;padding:24px;margin-bottom:20px}
+.admin-card h3{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin-bottom:20px;color:var(--crimson-deep)}
+.admin-form{display:flex;flex-direction:column;gap:14px}
+.admin-form input,.admin-form select{padding:11px 13px;border:1px solid var(--gray);font-family:'Montserrat',sans-serif;font-size:12px;color:var(--crimson-deep);outline:none;background:var(--off);width:100%}
+.admin-form input:focus,.admin-form select:focus{border-color:var(--crimson)}
+.upload-area{border:2px dashed var(--gray);padding:24px;text-align:center;cursor:pointer;position:relative;background:var(--off);transition:border-color 0.2s}
+.upload-area:hover{border-color:var(--crimson)}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:28px;margin-bottom:6px}
+.upload-text{font-size:10px;color:var(--txt);letter-spacing:0.1em}
+.img-preview{width:100%;max-height:160px;object-fit:cover;display:none;margin-top:10px}
+.admin-add-btn{background:var(--crimson);color:white;border:none;padding:13px 28px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;width:100%;transition:background 0.2s}
+.admin-add-btn:hover{background:var(--crimson-dark)}
+
+/* Products list */
+.filter-row{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.filter-btn{padding:7px 16px;border:1px solid var(--gray);background:white;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;color:var(--txt);transition:all 0.2s}
+.filter-btn.active{background:var(--crimson);color:white;border-color:var(--crimson)}
+.admin-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.admin-product{background:white;overflow:hidden;position:relative}
+.admin-product-img{width:100%;aspect-ratio:1;object-fit:cover;background:var(--gray);display:flex;align-items:center;justify-content:center;font-size:32px}
+.admin-product-img img{width:100%;height:100%;object-fit:cover}
+.admin-product-body{padding:12px}
+.admin-badge{display:inline-block;font-size:8px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:2px 7px;margin-bottom:6px}
+.badge-m{background:rgba(165,0,32,0.08);color:var(--crimson)}
+.badge-t{background:rgba(201,168,76,0.12);color:#8a6520}
+.admin-pname{font-size:11px;font-weight:600;margin-bottom:2px;color:var(--crimson-deep)}
+.admin-pprice{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--crimson)}
+.del-btn{position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.45);color:white;border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+.del-btn:hover{background:var(--crimson)}
+.no-products{grid-column:1/-1;text-align:center;padding:48px;color:var(--txt);font-size:12px}
+
+/* Visit site btn */
+.visit-site{display:block;text-align:center;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:8px;font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;text-decoration:none;margin-top:8px;transition:all 0.2s}
+.visit-site:hover{color:white;background:rgba(255,255,255,0.12)}
+.logout-btn{background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.45);font-family:'Montserrat',sans-serif;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;padding:7px 14px;cursor:pointer;transition:all 0.2s}
+.logout-btn:hover{color:white;border-color:rgba(255,255,255,0.4)}
+</style>
+</head>
+<body>
+
+<!-- ═══ MAIN SITE ═══ -->
+<div id="mainSite">
+
+<nav id="navbar">
+  <a href="#" class="nav-logo">ALFENA <span>FASHION</span></a>
+  <ul class="nav-links">
+    <li><a href="#collections">Collections</a></li>
+    <li><a href="#order">Order</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button onclick="showToast('Coming soon!')">🔍</button>
+    <button onclick="window.open('https://instagram.com','_blank')">📸</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-eyebrow">New Collection · 2026</p>
+  <h1 class="hero-title">Dress with<br><em>intention.</em></h1>
+  <p class="hero-sub">Modern elegance meets Moroccan heritage — curated pieces for every occasion.</p>
+  <div class="hero-cta">
+    <button class="btn-primary" onclick="switchTab('modern');document.getElementById('collections').scrollIntoView({behavior:'smooth'})">
+      <small style="font-size:8px;letter-spacing:0.3em;display:block;margin-bottom:3px;opacity:0.7">ALFENA</small>Modern
+    </button>
+    <button class="btn-outline" onclick="switchTab('traditional');document.getElementById('collections').scrollIntoView({behavior:'smooth'})">
+      <small style="font-size:8px;letter-spacing:0.3em;display:block;margin-bottom:3px;opacity:0.7">ALFENA</small>Haute Couture
+    </button>
+  </div>
+  <div class="hero-scroll"><div class="hero-line"></div>Scroll to explore</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="marquee-track">
+    <span>NEW ARRIVALS</span><span>FREE SHIPPING</span><span>ALFENA FASHION</span>
+    <span>MODERN & HAUTE COUTURE</span><span>EASY RETURNS</span><span>CURATED STYLE</span>
+    <span>NEW ARRIVALS</span><span>FREE SHIPPING</span><span>ALFENA FASHION</span>
+    <span>MODERN & HAUTE COUTURE</span><span>EASY RETURNS</span><span>CURATED STYLE</span>
+  </div>
+</div>
+
+<!-- COLLECTIONS -->
+<section class="collection-tabs" id="collections">
+  <div class="section-header">
+    <p class="eyebrow">Our Collections</p>
+    <h2 class="section-title">Shop by Style</h2>
+  </div>
+  <div class="tabs-nav">
+    <button class="tab-btn active" id="tab-modern" onclick="switchTab('modern')">
+      <span style="font-size:8px;letter-spacing:0.3em;display:block;opacity:0.6;margin-bottom:2px">ALFENA FASHION</span>Modern
+    </button>
+    <button class="tab-btn trad" id="tab-traditional" onclick="switchTab('traditional')">
+      <span style="font-size:8px;letter-spacing:0.3em;display:block;opacity:0.6;margin-bottom:2px">ALFENA FASHION</span>Haute Couture
+    </button>
+  </div>
+  <div class="tab-content active" id="content-modern">
+    <div class="products-grid" id="modern-grid">
+      <div class="empty-state">✨ Modern collection coming soon<br><small>Products will appear here</small></div>
+    </div>
+  </div>
+  <div class="tab-content" id="content-traditional">
+    <div class="products-grid" id="traditional-grid">
+      <div class="empty-state">🌙 Haute Couture collection coming soon<br><small>Products will appear here</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- ORDER -->
+<section class="order-section" id="order">
+  <div class="section-header">
+    <p class="eyebrow">Quick & Easy</p>
+    <h2 class="section-title">Place Your Order</h2>
+    <p style="color:var(--txt);font-size:12px;margin-top:10px">Fill the form — we'll contact you on WhatsApp</p>
+  </div>
+  <div class="order-box">
+    <div class="form-group"><label>Full Name</label><input type="text" id="oName" placeholder="Your name"></div>
+    <div class="form-group"><label>Phone</label><input type="tel" id="oPhone" placeholder="+212 6 00 00 00 00"></div>
+    <div class="form-group">
+      <label>Collection</label>
+      <select id="oCol" onchange="updateProdSelect()">
+        <option value="">— Select —</option>
+        <option value="modern">Alfena Fashion Modern</option>
+        <option value="traditional">Alfena Fashion Haute Couture</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Product</label><select id="oProd"><option value="">— Select a product —</option></select></div>
+    <div class="form-group">
+      <label>Size</label>
+      <div class="size-btns">
+        <button class="size-btn" onclick="selSize(this)">XS</button>
+        <button class="size-btn" onclick="selSize(this)">S</button>
+        <button class="size-btn" onclick="selSize(this)">M</button>
+        <button class="size-btn" onclick="selSize(this)">L</button>
+        <button class="size-btn" onclick="selSize(this)">XL</button>
+        <button class="size-btn" onclick="selSize(this)">Free</button>
+      </div>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="oNotes" placeholder="Color, address, questions..."></textarea></div>
+    <button class="wa-btn" onclick="sendWA()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Send Order via WhatsApp
+    </button>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter">
+  <p class="eyebrow" style="color:rgba(255,255,255,0.4)">Stay in the loop</p>
+  <h2 class="section-title">Join the Alfena Circle</h2>
+  <p>Be first to know about new arrivals and exclusive offers.</p>
+  <div class="nl-form">
+    <input type="email" id="nlEmail" placeholder="Your email address">
+    <button onclick="subscribe()">Subscribe</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">ALFENA <span>FASHION</span></div>
+  <p>Curated fashion for the modern woman.<br>Where Moroccan heritage meets contemporary elegance.</p>
+  <div class="footer-links">
+    <a href="#collections">Modern</a>
+    <a href="#" onclick="switchTab('traditional')">Haute Couture</a>
+    <a href="#order">Order</a>
+  </div>
+  <div class="footer-bottom">© 2026 Alfena Fashion. All rights reserved.</div>
+</footer>
+
+</div><!-- end mainSite -->
+
+<!-- ═══ ADMIN PANEL ═══ -->
+<div class="admin-wrap" id="adminWrap">
+
+  <!-- Login -->
+  <div class="admin-login" id="adminLogin">
+    <div class="login-box">
+      <div class="login-logo">ALFENA</div>
+      <div class="login-sub">ADMIN PANEL</div>
+      <input type="password" id="loginPass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="login-btn" onclick="doLogin()">Enter</button>
+      <div class="login-err" id="loginErr"></div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="admin-header">
+    <div class="admin-header-logo">ALFENA <span>ADMIN</span></div>
+    <div class="admin-nav">
+      <button class="admin-nav-btn active" id="anav-dash" onclick="aPage('dash')">📊</button>
+      <button class="admin-nav-btn" id="anav-add" onclick="aPage('add')">➕</button>
+      <button class="admin-nav-btn" id="anav-prods" onclick="aPage('prods')">👗</button>
+      <button class="logout-btn" onclick="adminLogout()">Exit</button>
+    </div>
+  </div>
+
+  <div class="admin-content">
+
+    <!-- Dashboard -->
+    <div class="admin-page active" id="apage-dash">
+      <div class="admin-page-title">Dashboard</div>
+      <div class="admin-page-sub">Welcome to Alfena Fashion admin</div>
+      <div class="stats">
+        <div class="stat"><div class="stat-n" id="s-total">0</div><div class="stat-l">Total</div></div>
+        <div class="stat"><div class="stat-n" id="s-modern">0</div><div class="stat-l">Modern</div></div>
+        <div class="stat gold"><div class="stat-n" id="s-trad">0</div><div class="stat-l">Haute Couture</div></div>
+      </div>
+      <div class="admin-card">
+        <h3>How to add products</h3>
+        <p style="font-size:12px;color:var(--txt);line-height:1.9">
+          1. Tap ➕ above<br>
+          2. Upload photo + enter name & price<br>
+          3. Choose Modern or Haute Couture<br>
+          4. Tap Add — appears on site instantly ✅
+        </p>
+        <button class="admin-add-btn" style="margin-top:16px" onclick="aPage('add')">➕ Add Product</button>
+      </div>
+      <a class="visit-site" href="/" onclick="showMainSite()">🌐 View Website</a>
+    </div>
+
+    <!-- Add Product -->
+    <div class="admin-page" id="apage-add">
+      <div class="admin-page-title">Add Product</div>
+      <div class="admin-page-sub">Add a new item to your store</div>
+      <div class="admin-card">
+        <div class="admin-form">
+          <div>
+            <label style="font-size:9px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--crimson-deep);display:block;margin-bottom:6px">Product Name *</label>
+            <input type="text" id="nName" placeholder="e.g. Red Kaftan">
+          </div>
+          <div>
+            <label style="font-size:9px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--crimson-deep);display:block;margin-bottom:6px">Price (MAD) *</label>
+            <input type="number" id="nPrice" placeholder="e.g. 450">
+          </div>
+          <div>
+            <label style="font-size:9px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--crimson-deep);display:block;margin-bottom:6px">Collection *</label>
+            <select id="nCol">
+              <option value="">— Select —</option>
+              <option value="modern">👗 Alfena Fashion Modern</option>
+              <option value="traditional">✦ Alfena Fashion Haute Couture</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:9px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--crimson-deep);display:block;margin-bottom:6px">Category (optional)</label>
+            <input type="text" id="nCat" placeholder="e.g. Kaftan, Dress, Top">
+          </div>
+          <div>
+            <label style="font-size:9px;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:var(--crimson-deep);display:block;margin-bottom:6px">Photo</label>
+            <div class="upload-area" id="uploadArea">
+              <input type="file" id="photoInput" accept="image/*" onchange="previewImg(this)">
+              <div class="upload-icon">📸</div>
+              <div class="upload-text">Tap to upload photo</div>
+              <img class="img-preview" id="imgPreview">
+            </div>
+          </div>
+          <button class="admin-add-btn" onclick="addProduct()">✓ Add to Store</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products -->
+    <div class="admin-page" id="apage-prods">
+      <div class="admin-page-title">Products</div>
+      <div class="admin-page-sub">Manage your store</div>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterProds('all',this)">All</button>
+        <button class="filter-btn" onclick="filterProds('modern',this)">Modern</button>
+        <button class="filter-btn" onclick="filterProds('traditional',this)">Haute Couture</button>
+      </div>
+      <div class="admin-grid" id="adminGrid"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'alfena_products';
+const PASS = 'alfena2026';
+let selSize = '';
+let imgB64 = '';
+let curFilter = 'all';
+
+// ── STORAGE
+function getProds(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch{return[]}}
+function saveProds(a){localStorage.setItem(KEY,JSON.stringify(a))}
+
+// ── TOAST
+let tt;
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2800)}
+
+// ── SITE: TABS
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('content-'+tab).classList.add('active');
+}
+
+// ── SITE: RENDER PRODUCTS
+function renderSite(){
+  const p=getProds();
+  renderGrid('modern-grid',p.filter(x=>x.col==='modern'),'modern');
+  renderGrid('traditional-grid',p.filter(x=>x.col==='traditional'),'traditional');
+  updateOrderSelect(p);
+}
+function renderGrid(id,items,type){
+  const g=document.getElementById(id);
+  if(!items.length){
+    g.innerHTML=type==='traditional'?'<div class="empty-state">✦ Haute Couture coming soon</div>':'<div class="empty-state">✨ Modern collection coming soon</div>';
+    return;
+  }
+  g.innerHTML=items.map(p=>`
+    <div class="product-card">
+      <div class="product-image">
+        ${p.img?`<img class="product-img" src="${p.img}" alt="${p.name}">`:`<div class="product-placeholder">${type==='traditional'?'✦':'👗'}</div>`}
+        <span class="${type==='traditional'?'trad-badge':'product-badge'}">${type==='traditional'?'Haute Couture':'New'}</span>
+        <button class="product-add" onclick="quickOrder('${p.name}','${p.col}')">+</button>
+      </div>
+      <div class="product-cat">${p.cat||type}</div>
+      <div class="product-name">${p.name}</div>
+      <div class="product-price">${p.price} MAD</div>
+    </div>
+  `).join('');
+}
+function quickOrder(name,col){
+  document.getElementById('oCol').value=col;
+  updateOrderSelect();
+  const s=document.getElementById('oProd');
+  for(let o of s.options){if(o.text.startsWith(name)){s.value=o.value;break}}
+  document.getElementById('order').scrollIntoView({behavior:'smooth'});
+}
+
+// ── ORDER
+function updateOrderSelect(){
+  const col=document.getElementById('oCol').value;
+  const prods=getProds().filter(p=>!col||p.col===col);
+  const s=document.getElementById('oProd');
+  s.innerHTML='<option value="">— Select a product —</option>'+prods.map(p=>`<option>${p.name} — ${p.price} MAD</option>`).join('');
+}
+function selSizeBtn(btn){document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');selSize=btn.textContent}
+// fix onclick
+document.querySelectorAll('.size-btn').forEach(b=>b.onclick=function(){selSizeBtn(this)});
+
+function sendWA(){
+  const name=document.getElementById('oName').value.trim();
+  const phone=document.getElementById('oPhone').value.trim();
+  const prod=document.getElementById('oProd').value;
+  const notes=document.getElementById('oNotes').value.trim();
+  if(!name){showToast('Please enter your name');return}
+  if(!phone){showToast('Please enter your phone');return}
+  if(!prod){showToast('Please select a product');return}
+  if(!selSize){showToast('Please select a size');return}
+  const msg=`🛍 *New Order — Alfena Fashion*\n\n👤 *Name:* ${name}\n📞 *Phone:* ${phone}\n👗 *Product:* ${prod}\n📐 *Size:* ${selSize}${notes?`\n📝 *Notes:* ${notes}`:''}\n\n_alfenafashion.com_`;
+  window.open(`https://wa.me/212655803737?text=${encodeURIComponent(msg)}`, '_blank');
+}
+function subscribe(){
+  const e=document.getElementById('nlEmail').value.trim();
+  if(!e||!e.includes('@')){showToast('Please enter a valid email');return}
+  showToast('✓ Welcome to the Alfena Circle!');
+  document.getElementById('nlEmail').value='';
+}
+
+// ── NAV
+window.addEventListener('scroll',()=>document.getElementById('navbar').classList.toggle('scrolled',scrollY>20));
+
+// ── ADMIN ROUTING
+function checkRoute(){
+  if(location.hash==='#admin'){
+    document.getElementById('mainSite').style.display='none';
+    document.getElementById('adminWrap').style.display='block';
+    updateStats();
+    renderAdminGrid('all');
+  }
+}
+function showMainSite(){
+  document.getElementById('mainSite').style.display='block';
+  document.getElementById('adminWrap').style.display='none';
+  history.pushState('','','/');
+}
+
+// ── ADMIN LOGIN
+function doLogin(){
+  const p=document.getElementById('loginPass').value;
+  if(p===PASS){document.getElementById('adminLogin').classList.add('hidden')}
+  else{document.getElementById('loginErr').textContent='Incorrect password'}
+}
+function adminLogout(){document.getElementById('adminLogin').classList.remove('hidden');showMainSite()}
+
+// ── ADMIN PAGES
+function aPage(name){
+  document.querySelectorAll('.admin-page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('apage-'+name).classList.add('active');
+  document.getElementById('anav-'+name).classList.add('active');
+  if(name==='prods')renderAdminGrid(curFilter);
+  if(name==='dash')updateStats();
+}
+
+// ── ADMIN: IMAGE
+function previewImg(input){
+  const file=input.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    imgB64=e.target.result;
+    const pr=document.getElementById('imgPreview');
+    pr.src=imgB64;pr.style.display='block';
+    document.querySelector('.upload-icon').style.display='none';
+  };
+  r.readAsDataURL(file);
+}
+
+// ── ADMIN: ADD PRODUCT
+function addProduct(){
+  const name=document.getElementById('nName').value.trim();
+  const price=document.getElementById('nPrice').value.trim();
+  const col=document.getElementById('nCol').value;
+  const cat=document.getElementById('nCat').value.trim();
+  if(!name){showToast('Enter product name');return}
+  if(!price){showToast('Enter price');return}
+  if(!col){showToast('Select a collection');return}
+  const prods=getProds();
+  prods.push({id:Date.now(),name,price,col,cat,img:imgB64});
+  saveProds(prods);
+  renderSite();
+  updateStats();
+  showToast('✓ Product added!');
+  document.getElementById('nName').value='';
+  document.getElementById('nPrice').value='';
+  document.getElementById('nCol').value='';
+  document.getElementById('nCat').value='';
+  document.getElementById('photoInput').value='';
+  document.getElementById('imgPreview').style.display='none';
+  document.querySelector('.upload-icon').style.display='block';
+  imgB64='';
+}
+
+// ── ADMIN: DELETE
+function delProduct(id){
+  if(!confirm('Delete this product?'))return;
+  saveProds(getProds().filter(p=>p.id!==id));
+  renderAdminGrid(curFilter);
+  renderSite();
+  updateStats();
+  showToast('Deleted');
+}
+
+// ── ADMIN: RENDER GRID
+function filterProds(f,btn){
+  curFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAdminGrid(f);
+}
+function renderAdminGrid(f){
+  let prods=getProds();
+  if(f!=='all')prods=prods.filter(p=>p.col===f);
+  const g=document.getElementById('adminGrid');
+  if(!prods.length){g.innerHTML='<div class="no-products">No products yet. Tap ➕ to add.</div>';return}
+  g.innerHTML=prods.map(p=>`
+    <div class="admin-product">
+      <div class="admin-product-img">${p.img?`<img src="${p.img}" alt="${p.name}">`:(p.col==='traditional'?'✦':'👗')}</div>
+      <button class="del-btn" onclick="delProduct(${p.id})">✕</button>
+      <div class="admin-product-body">
+        <span class="admin-badge ${p.col==='traditional'?'badge-t':'badge-m'}">${p.col==='traditional'?'Haute Couture':'Modern'}</span>
+        <div class="admin-pname">${p.name}</div>
+        <div class="admin-pprice">${p.price} MAD</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── STATS
+function updateStats(){
+  const p=getProds();
+  document.getElementById('s-total').textContent=p.length;
+  document.getElementById('s-modern').textContent=p.filter(x=>x.col==='modern').length;
+  document.getElementById('s-trad').textContent=p.filter(x=>x.col==='traditional').length;
+}
+
+// ── INIT
+renderSite();
+checkRoute();
+window.addEventListener('hashchange',checkRoute);
+</script>
+</body>
+</html>
