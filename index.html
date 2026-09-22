@@ -438,7 +438,14 @@ footer p{font-size:11px;line-height:1.8;margin-bottom:16px}
   <div class="sheet-handle"></div>
   <div style="position:relative">
     <button class="sheet-close" style="position:absolute;top:12px;right:16px;z-index:5;background:rgba(0,0,0,0.4);color:white;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px" onclick="closeProd()">✕</button>
-    <div class="prod-img-wrap" id="prodImg"></div>
+    <div id="prodImgWrap">
+    <div class="swiper-wrap" id="prodSwiper">
+      <div class="swiper-track" id="prodTrack"></div>
+      <button class="swiper-arrow swiper-prev" id="swiperPrev" onclick="swiperNav(-1)" style="display:none">‹</button>
+      <button class="swiper-arrow swiper-next" id="swiperNext" onclick="swiperNav(1)" style="display:none">›</button>
+    </div>
+    <div class="swiper-dots" id="swiperDots"></div>
+  </div>
   </div>
   <div class="prod-body">
     <div class="prod-badge" id="prodBadge"></div>
@@ -528,13 +535,13 @@ footer p{font-size:11px;line-height:1.8;margin-bottom:16px}
           </div>
           <div><label class="aLabel">Category (optional)</label><input type="text" id="nCat" placeholder="e.g. Kaftan, Dress, Top"></div>
           <div>
-            <label class="aLabel">Photo</label>
+            <label class="aLabel">Photos (up to 4)</label>
             <div class="aUpload" id="aUploadArea">
-              <input type="file" id="aPhoto" accept="image/*" onchange="previewImg(this)">
+              <input type="file" id="aPhoto" accept="image/*" multiple onchange="previewImgs(this)">
               <div class="aUploadIcon">📸</div>
-              <div class="aUploadTxt">Tap to upload photo</div>
-              <img class="aImgPrev" id="aImgPrev">
+              <div class="aUploadTxt">Tap to upload up to 4 photos</div>
             </div>
+            <div id="aImgPrevWrap" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
           </div>
           <button class="aAddBtn" onclick="addProduct()">✓ Add to Store</button>
         </div>
@@ -567,7 +574,7 @@ let prodQty=1;
 let delivery='standard';
 let orderData={};
 let curFilter='all';
-let imgB64='';
+
 
 // ── STORAGE
 function getProds(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch{return[]}}
@@ -618,7 +625,7 @@ function renderShop(){
 function prodCard(p){
   return`<div class="pcard" onclick="openProd(${p.id})">
     <div class="pcard-img">
-      ${p.img?`<img src="${p.img}" alt="${p.name}">`:`<div class="pcard-placeholder">${p.col==='traditional'?'✦':'👗'}</div>`}
+      ${(p.imgs&&p.imgs.length)?`<img src="${p.imgs[0]}" alt="${p.name}">`:(p.img?`<img src="${p.img}" alt="${p.name}">`:`<div class="pcard-placeholder">${p.col==='traditional'?'✦':'👗'}</div>`)}
       <span class="pcard-tag ${p.col==='traditional'?'tag-hc':'tag-new'}">${p.col==='traditional'?'Haute Couture':'New'}</span>
     </div>
     <div class="pcard-cat">${p.cat||p.col}</div>
@@ -632,7 +639,18 @@ function openProd(id){
   const p=getProds().find(x=>x.id===id);
   if(!p)return;
   curProd=p;prodSize='';prodQty=1;
-  document.getElementById('prodImg').innerHTML=p.img?`<img src="${p.img}" alt="${p.name}">`:(p.col==='traditional'?'✦':'👗');
+  // Build swiper
+  const imgs=p.imgs&&p.imgs.length?p.imgs:(p.img?[p.img]:[]);
+  const track=document.getElementById('prodTrack');
+  const dots=document.getElementById('swiperDots');
+  const prev=document.getElementById('swiperPrev');
+  const next=document.getElementById('swiperNext');
+  swiperIdx=0;
+  track.innerHTML=imgs.length?imgs.map(src=>`<div class="swiper-slide"><img src="${src}" alt="${p.name}"></div>`).join(''):`<div class="swiper-slide">${p.col==='traditional'?'✦':'👗'}</div>`;
+  track.style.transform='translateX(0)';
+  dots.innerHTML=imgs.length>1?imgs.map((_,i)=>`<div class="swiper-dot${i===0?' on':''}" onclick="swiperGo(${i})"></div>`).join(''):'';
+  prev.style.display=imgs.length>1?'flex':'none';
+  next.style.display=imgs.length>1?'flex':'none';
   const badge=document.getElementById('prodBadge');
   badge.textContent=p.col==='traditional'?'Haute Couture':'Modern';
   badge.style.cssText=p.col==='traditional'?'background:rgba(201,168,76,0.1);color:#8a6520':'background:rgba(165,0,32,0.08);color:var(--red)';
@@ -820,16 +838,24 @@ function aPage(n){
 }
 
 // ── ADMIN IMAGE
-function previewImg(input){
-  const file=input.files[0];if(!file)return;
-  const r=new FileReader();
-  r.onload=e=>{
-    imgB64=e.target.result;
-    const pr=document.getElementById('aImgPrev');
-    pr.src=imgB64;pr.style.display='block';
-    document.querySelector('.aUploadIcon').style.display='none';
-  };
-  r.readAsDataURL(file);
+let imgB64s=[];
+function previewImgs(input){
+  const files=Array.from(input.files).slice(0,4);
+  if(!files.length)return;
+  imgB64s=[];
+  const wrap=document.getElementById('aImgPrevWrap');
+  wrap.innerHTML='';
+  files.forEach((file,i)=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      imgB64s[i]=e.target.result;
+      const img=document.createElement('img');
+      img.src=e.target.result;
+      img.style.cssText='width:64px;height:64px;object-fit:cover;border:2px solid var(--red)';
+      wrap.appendChild(img);
+    };
+    r.readAsDataURL(file);
+  });
 }
 
 // ── ADMIN ADD
@@ -842,7 +868,7 @@ function addProduct(){
   if(!price){toast('Enter price');return}
   if(!col){toast('Select a collection');return}
   const prods=getProds();
-  prods.push({id:Date.now(),name,price:parseInt(price),col,cat,img:imgB64});
+  prods.push({id:Date.now(),name,price:parseInt(price),col,cat,imgs:imgB64s.length?[...imgB64s]:[]});
   saveProds(prods);
   updateStats();toast('✓ Product added!');
   document.getElementById('nName').value='';
@@ -850,9 +876,8 @@ function addProduct(){
   document.getElementById('nCol').value='';
   document.getElementById('nCat').value='';
   document.getElementById('aPhoto').value='';
-  document.getElementById('aImgPrev').style.display='none';
-  document.querySelector('.aUploadIcon').style.display='block';
-  imgB64='';
+  document.getElementById('aImgPrevWrap').innerHTML='';
+  imgB64s=[];
 }
 
 // ── ADMIN DELETE
@@ -876,7 +901,7 @@ function renderAGrid(f){
   if(!prods.length){g.innerHTML='<div class="aEmpty">No products yet.<br>Tap ➕ to add.</div>';return}
   g.innerHTML=prods.map(p=>`
     <div class="aProduct">
-      <div class="aProductImg">${p.img?`<img src="${p.img}" alt="${p.name}">`:(p.col==='traditional'?'✦':'👗')}</div>
+      <div class="aProductImg">${(p.imgs&&p.imgs.length)?`<img src="${p.imgs[0]}" alt="${p.name}">`:(p.img?`<img src="${p.img}" alt="${p.name}">`:(p.col==='traditional'?'✦':'👗'))}</div>
       <button class="aDelBtn" onclick="delProd(${p.id})">✕</button>
       <div class="aProductBody">
         <span class="aBadge ${p.col==='traditional'?'bT':'bM'}">${p.col==='traditional'?'Haute Couture':'Modern'}</span>
