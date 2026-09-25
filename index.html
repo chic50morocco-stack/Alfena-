@@ -951,3 +951,76 @@ window.addEventListener('hashchange',checkRoute);
 </script>
 </body>
 </html>
+  // --- FIREBASE CONFIGURATION & INITIALIZATION ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyDk2rBdstt7149liygDLvJPQNrceyFMZHw",
+    authDomain: "alfena-d4422.firebaseapp.com",
+    databaseURL: "https://alfena-d4422-default-rtdb.firebaseio.com",
+    projectId: "alfena-d4422",
+    storageBucket: "alfena-d4422.firebasestorage.app",
+    messagingSenderId: "551846512901",
+    appId: "1:551846512901:web:c3dcdf3655dea26eef0f6c",
+    measurementId: "G-W7TN7H2VV8"
+  };
+
+  if (typeof firebase !== 'undefined') {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+  }
+
+  // Realtime Database Helper Functions
+  function loadProductsFromFirebase(renderCallback) {
+    if (typeof firebase === 'undefined') return;
+    const db = firebase.database();
+    db.ref('products').on('value', (snapshot) => {
+      const data = snapshot.val();
+      const productsList = [];
+      if (data) {
+        Object.keys(data).forEach((id) => {
+          productsList.push({ id, ...data[id] });
+        });
+      }
+      renderCallback(productsList);
+    });
+  }
+
+  function addNewProductToFirebase(productData) {
+    if (typeof firebase === 'undefined') return;
+    const db = firebase.database();
+    return db.ref('products').push(productData);
+  }
+
+  async function submitOrderToFirebaseAndTelegram(orderDetails) {
+    try {
+      if (typeof firebase !== 'undefined') {
+        const db = firebase.database();
+        await db.ref('orders').push({
+          ...orderDetails,
+          timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+      }
+
+      const TELEGRAM_BOT_TOKEN = '8947265870:AAEkQqoLSfUb15eqEbBApNhXtVd3nftgZ1k';
+      const TELEGRAM_CHAT_ID = '896389277';
+
+      const message = `🛍️ **New Order Received!**\n\n` +
+                      `👤 **Customer:** ${orderDetails.name || 'N/A'}\n` +
+                      `📞 **Phone:** ${orderDetails.phone || 'N/A'}\n` +
+                      `📍 **Address:** ${orderDetails.address || 'N/A'}, ${orderDetails.city || ''}\n` +
+                      `📦 **Items:** ${orderDetails.items || 'N/A'}\n` +
+                      `💰 **Total:** $${orderDetails.total || '0'}`;
+
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: TELEGRAM_CHAT_ID,
+          text: message,
+          parse_mode: 'Markdown'
+        })
+      });
+    } catch (error) {
+      console.error("Error processing order:", error);
+    }
+  }
