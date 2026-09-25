@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ALFENA FASHION</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Firebase (shared product storage across all visitors) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<!-- EmailJS (automatic order emails) -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#A50020;--red-dark:#7D0018;--red-deep:#3D000B;
+  --gold:#C9A84C;--white:#fff;--off:#FAF8F6;--gray:#F0EDED;
+  --mid:#C8C4C4;--txt:#6B6464;--green:#25D366;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Montserrat',sans-serif;background:var(--white);color:var(--red-deep);overflow-x:hidden}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:60px;background:rgba(255,255,255,0.97);border-bottom:1px solid rgba(165,0,32,0.1);transition:box-shadow 0.3s}
+nav.scrolled{box-shadow:0 2px 20px rgba(165,0,32,0.08)}
+.logo{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;letter-spacing:0.18em;color:var(--red);text-decoration:none;display:flex;flex-direction:column;line-height:1}
+.logo span{font-size:7px;letter-spacing:0.45em;color:var(--red-dark);font-family:'Montserrat',sans-serif;font-weight:500;margin-top:2px}
+.nav-right{display:flex;align-items:center;gap:4px}
+.nav-btn{background:none;border:none;cursor:pointer;padding:8px;font-size:16px;color:var(--red-deep);transition:color 0.2s;position:relative}
+.nav-btn:hover{color:var(--red)}
+.cart-badge{position:absolute;top:2px;right:2px;background:var(--red);color:white;font-size:8px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s}
+.cart-badge.show{opacity:1}
+
+/* ── HERO ── */
+.hero{margin-top:60px;min-height:calc(100vh - 60px);background:var(--red);display:flex;flex-direction:column;justify-content:center;padding:48px 24px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;right:-80px;bottom:-80px;width:400px;height:400px;border-radius:50%;border:1px solid rgba(255,255,255,0.06)}
+.hero::after{content:'';position:absolute;right:-40px;bottom:-40px;width:280px;height:280px;border-radius:50%;border:1px solid rgba(255,255,255,0.04)}
+.hero-tag{font-size:9px;letter-spacing:0.5em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-bottom:18px}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(52px,14vw,88px);font-weight:300;line-height:1.02;color:white;margin-bottom:20px}
+.hero-title em{font-style:italic}
+.hero-desc{font-size:13px;font-weight:300;line-height:1.8;color:rgba(255,255,255,0.75);max-width:300px;margin-bottom:36px}
+.hero-btns{display:flex;gap:10px}
+.btn-white{background:white;color:var(--red);border:none;padding:14px 0;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;flex:1;transition:all 0.2s;line-height:1.5;text-align:center}
+.btn-white:hover{background:var(--off);transform:translateY(-1px)}
+.btn-ghost{background:none;color:white;border:1px solid rgba(255,255,255,0.45);padding:14px 0;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;flex:1;transition:all 0.2s;line-height:1.5;text-align:center}
+.btn-ghost:hover{border-color:white;background:rgba(255,255,255,0.06)}
+.hero-scroll{position:absolute;bottom:20px;left:24px;display:flex;align-items:center;gap:8px;color:rgba(255,255,255,0.35);font-size:8px;letter-spacing:0.3em;text-transform:uppercase}
+.scroll-line{width:28px;height:1px;background:rgba(255,255,255,0.25)}
+
+/* ── MARQUEE ── */
+.marquee{background:var(--red-deep);padding:11px 0;overflow:hidden}
+.marquee-inner{display:flex;animation:ticker 20s linear infinite;white-space:nowrap}
+.marquee-inner span{font-size:8px;letter-spacing:0.4em;text-transform:uppercase;color:rgba(255,255,255,0.7);padding:0 28px;border-right:1px solid rgba(255,255,255,0.12)}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── SECTIONS ── */
+.section{padding:64px 20px}
+.sec-eyebrow{font-size:8px;font-weight:500;letter-spacing:0.5em;text-transform:uppercase;color:var(--red);margin-bottom:10px;text-align:center}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,8vw,44px);font-weight:300;color:var(--red-deep);text-align:center;margin-bottom:36px}
+
+/* ── TABS ── */
+.tabs{display:flex;justify-content:center;gap:0;margin-bottom:32px;border-bottom:1px solid var(--gray)}
+.tab{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;background:none;border:none;padding:12px 20px;cursor:pointer;color:var(--txt);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.2s;line-height:1.6;text-align:center}
+.tab.on{color:var(--red);border-bottom-color:var(--red)}
+.tab.trad.on{color:var(--gold);border-bottom-color:var(--gold)}
+.tab-pane{display:none}
+.tab-pane.on{display:block}
+
+/* ── PRODUCT GRID ── */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.pcard{cursor:pointer;transition:transform 0.2s}
+.pcard:hover{transform:translateY(-2px)}
+.pcard-img{aspect-ratio:3/4;overflow:hidden;position:relative;background:var(--gray);margin-bottom:10px}
+.pcard-img img{width:100%;height:100%;object-fit:cover;transition:transform 0.5s ease}
+.pcard:hover .pcard-img img{transform:scale(1.04)}
+.pcard-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px;background:var(--gray)}
+.pcard-tag{position:absolute;top:8px;left:8px;font-size:8px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:3px 8px;color:white}
+.tag-new{background:var(--red)}
+.tag-hc{background:var(--gold)}
+.pcard-name{font-size:11px;font-weight:500;color:var(--red-deep);margin-bottom:2px}
+.pcard-cat{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--txt);margin-bottom:4px}
+.pcard-price{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--red)}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--txt);font-size:12px;line-height:1.8}
+
+/* ── CART SHEET ── */
+.sheet-overlay{position:fixed;inset:0;background:rgba(61,0,11,0.65);z-index:200;opacity:0;pointer-events:none;transition:opacity 0.3s}
+.sheet-overlay.on{opacity:1;pointer-events:all}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:white;z-index:201;transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);max-height:90vh;overflow-y:auto;border-radius:16px 16px 0 0}
+.sheet.on{transform:translateY(0)}
+.sheet-handle{width:36px;height:3px;background:var(--mid);border-radius:2px;margin:14px auto 0}
+.sheet-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px}
+.sheet-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--red-deep)}
+.sheet-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--txt)}
+
+/* ── PRODUCT SHEET ── */
+.prod-img-wrap{width:100%;aspect-ratio:4/3;overflow:hidden;background:var(--gray);display:flex;align-items:center;justify-content:center;font-size:56px}
+.prod-img-wrap img{width:100%;height:100%;object-fit:cover}
+.prod-body{padding:20px}
+.prod-badge{display:inline-block;font-size:8px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;padding:3px 9px;margin-bottom:10px}
+.prod-name{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:var(--red-deep);margin-bottom:4px}
+.prod-price{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--red);margin-bottom:18px}
+.prod-label{font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--red-deep);margin-bottom:8px}
+.sizes{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.sz{padding:8px 13px;border:1px solid var(--gray);background:white;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;color:var(--red-deep);transition:all 0.2s}
+.sz:hover,.sz.on{background:var(--red);color:white;border-color:var(--red)}
+.qty-row{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.qty-box{display:flex;align-items:center;border:1px solid var(--gray)}
+.qty-box button{background:none;border:none;width:38px;height:38px;font-size:18px;cursor:pointer;color:var(--red-deep)}
+.qty-box span{padding:0 16px;font-size:14px;font-weight:600}
+.add-cart-btn{width:100%;background:var(--red);color:white;border:none;padding:15px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;margin-bottom:8px;transition:background 0.2s}
+.add-cart-btn:hover{background:var(--red-dark)}
+.ask-wa-btn{width:100%;background:var(--green);color:white;border:none;padding:13px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:background 0.2s}
+.ask-wa-btn:hover{background:#1db954}
+
+/* ── CART ── */
+.cart-items{padding:0 20px}
+.cart-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--gray)}
+.cart-item-img{width:64px;height:64px;object-fit:cover;background:var(--gray);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px}
+.cart-item-img img{width:100%;height:100%;object-fit:cover}
+.cart-item-info{flex:1}
+.cart-item-name{font-size:12px;font-weight:600;color:var(--red-deep);margin-bottom:2px}
+.cart-item-meta{font-size:10px;color:var(--txt);margin-bottom:4px}
+.cart-item-price{font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--red)}
+.cart-item-del{background:none;border:none;color:var(--mid);font-size:16px;cursor:pointer;padding:4px;transition:color 0.2s}
+.cart-item-del:hover{color:var(--red)}
+.cart-footer{padding:16px 20px 24px}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.cart-total-label{font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--txt)}
+.cart-total-val{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--red)}
+.checkout-btn{width:100%;background:var(--red);color:white;border:none;padding:16px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:background 0.2s}
+.checkout-btn:hover{background:var(--red-dark)}
+.empty-cart{text-align:center;padding:48px 20px;color:var(--txt);font-size:12px;line-height:1.8}
+
+/* ── CHECKOUT ── */
+.checkout-section{background:var(--off)}
+.checkout-wrap{max-width:480px;margin:0 auto}
+.checkout-steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:32px}
+.cstep{display:flex;flex-direction:column;align-items:center;gap:4px}
+.cstep-num{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--mid);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--txt);transition:all 0.3s}
+.cstep.on .cstep-num{background:var(--red);border-color:var(--red);color:white}
+.cstep.done .cstep-num{background:var(--red-dark);border-color:var(--red-dark);color:white}
+.cstep-lbl{font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:var(--txt)}
+.cstep.on .cstep-lbl{color:var(--red);font-weight:600}
+.cstep-line{flex:1;height:1px;background:var(--mid);margin:0 6px 14px}
+.co-card{background:white;padding:24px;margin-bottom:16px}
+.co-card-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;color:var(--red-deep);margin-bottom:18px}
+.co-step{display:none}
+.co-step.on{display:block}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--red-deep)}
+.field input,.field textarea,.field select{padding:11px 13px;border:1px solid var(--gray);font-family:'Montserrat',sans-serif;font-size:12px;color:var(--red-deep);outline:none;background:var(--off);transition:border-color 0.2s;width:100%}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--red)}
+.field textarea{resize:vertical;min-height:70px}
+.payment-box{border:1.5px solid var(--red);padding:16px;display:flex;align-items:center;gap:12px;background:rgba(165,0,32,0.02)}
+.payment-icon{font-size:28px}
+.payment-info strong{font-size:13px;color:var(--red-deep);display:block}
+.payment-info span{font-size:11px;color:var(--txt)}
+.order-summary{background:var(--off);padding:16px;margin-bottom:16px}
+.os-title{font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--red-deep);margin-bottom:12px}
+.os-item{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.os-item span:first-child{color:var(--txt)}
+.os-item span:last-child{color:var(--red-deep);font-weight:500}
+.os-divider{height:1px;background:var(--gray);margin:10px 0}
+.os-total{display:flex;justify-content:space-between;font-size:14px;font-weight:600}
+.co-btn{width:100%;background:var(--red);color:white;border:none;padding:15px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:background 0.2s;margin-top:8px}
+.co-btn:hover{background:var(--red-dark)}
+.co-back{width:100%;background:none;border:1px solid var(--gray);color:var(--txt);padding:13px;font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;margin-top:8px;transition:all 0.2s}
+.co-back:hover{border-color:var(--red);color:var(--red)}
+.success-box{text-align:center;padding:40px 20px}
+.success-icon{font-size:56px;margin-bottom:16px}
+.success-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--red-deep);margin-bottom:8px}
+.success-desc{font-size:12px;color:var(--txt);line-height:1.8;margin-bottom:24px}
+.success-wa{background:var(--green);color:white;border:none;padding:14px 28px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background 0.2s}
+.success-wa:hover{background:#1db954}
+
+/* ── FOOTER ── */
+footer{background:var(--red-deep);color:rgba(255,255,255,0.45);padding:36px 20px}
+.footer-logo{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;letter-spacing:0.18em;color:rgba(255,255,255,0.85);display:flex;flex-direction:column;line-height:1;margin-bottom:10px}
+.footer-logo span{font-size:7px;letter-spacing:0.45em;color:rgba(255,255,255,0.3);font-family:'Montserrat',sans-serif;margin-top:2px}
+footer p{font-size:11px;line-height:1.8;margin-bottom:16px}
+.footer-links{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.footer-links a{font-size:10px;color:rgba(255,255,255,0.3);text-decoration:none;transition:color 0.2s}
+.footer-links a:hover{color:white}
+.footer-copy{border-top:1px solid rgba(255,255,255,0.06);padding-top:16px;font-size:10px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:16px;z-index:500;background:var(--red-deep);color:white;padding:12px 18px;font-size:11px;border-left:3px solid var(--red);transform:translateY(60px);opacity:0;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;max-width:260px}
+.toast.on{transform:translateY(0);opacity:1}
+
+/* ══════════════════════════════
+   ADMIN PANEL
+══════════════════════════════ */
+#adminWrap{display:none;min-height:100vh;background:var(--off)}
+.aLogin{position:fixed;inset:0;background:var(--red);display:flex;align-items:center;justify-content:center;z-index:500}
+.aLogin.hide{display:none}
+.aLoginBox{background:white;padding:36px;width:300px;text-align:center}
+.aLogo{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;letter-spacing:0.2em;color:var(--red)}
+.aSub{font-size:7px;letter-spacing:0.4em;color:var(--txt);margin-bottom:24px;margin-top:2px}
+.aLoginBox input{width:100%;padding:12px 13px;border:1px solid var(--gray);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;margin-bottom:10px}
+.aLoginBox input:focus{border-color:var(--red)}
+.aLoginBtn{width:100%;background:var(--red);color:white;border:none;padding:13px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer}
+.aErr{color:var(--red);font-size:11px;margin-top:6px;min-height:14px}
+.aHeader{background:var(--red-deep);color:white;padding:0 16px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.aHeaderLogo{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;letter-spacing:0.2em}
+.aHeaderLogo small{font-size:7px;letter-spacing:0.35em;display:block;opacity:0.35;font-family:'Montserrat',sans-serif;margin-top:1px}
+.aNav{display:flex;gap:2px;align-items:center}
+.aNavBtn{background:none;border:none;color:rgba(255,255,255,0.45);font-family:'Montserrat',sans-serif;font-size:8px;font-weight:500;letter-spacing:0.15em;text-transform:uppercase;padding:6px 10px;cursor:pointer;transition:all 0.2s;border-radius:2px}
+.aNavBtn:hover,.aNavBtn.on{background:rgba(255,255,255,0.08);color:white}
+.aExitBtn{background:none;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);font-family:'Montserrat',sans-serif;font-size:8px;letter-spacing:0.15em;text-transform:uppercase;padding:6px 10px;cursor:pointer;margin-left:6px;transition:all 0.2s}
+.aExitBtn:hover{color:white;border-color:rgba(255,255,255,0.3)}
+.aContent{padding:20px}
+.aPage{display:none}
+.aPage.on{display:block}
+.aPageTitle{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--red-deep);margin-bottom:2px}
+.aPageSub{font-size:11px;color:var(--txt);margin-bottom:20px}
+.aStats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.aStat{background:white;padding:16px;border-left:3px solid var(--red)}
+.aStat.g{border-left-color:var(--gold)}
+.aStatN{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:300;color:var(--red);line-height:1}
+.aStat.g .aStatN{color:var(--gold)}
+.aStatL{font-size:8px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--txt);margin-top:2px}
+.aCard{background:white;padding:20px;margin-bottom:16px}
+.aCard h3{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;color:var(--red-deep);margin-bottom:16px}
+.aForm{display:flex;flex-direction:column;gap:12px}
+.aForm input,.aForm select{padding:10px 12px;border:1px solid var(--gray);font-family:'Montserrat',sans-serif;font-size:12px;color:var(--red-deep);outline:none;background:var(--off);width:100%}
+.aForm input:focus,.aForm select:focus{border-color:var(--red)}
+.aLabel{font-size:8px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--red-deep);display:block;margin-bottom:5px}
+.aUpload{border:2px dashed var(--gray);padding:20px;text-align:center;cursor:pointer;position:relative;background:var(--off);transition:border-color 0.2s}
+.aUpload:hover{border-color:var(--red)}
+.aUpload input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.aUploadIcon{font-size:24px;margin-bottom:4px}
+.aUploadTxt{font-size:10px;color:var(--txt)}
+.aImgPrev{width:100%;max-height:140px;object-fit:cover;display:none;margin-top:8px}
+.aAddBtn{background:var(--red);color:white;border:none;padding:12px;font-family:'Montserrat',sans-serif;font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;width:100%;transition:background 0.2s}
+.aAddBtn:hover{background:var(--red-dark)}
+.aFilters{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.aFilter{padding:6px 14px;border:1px solid var(--gray);background:white;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;color:var(--txt);transition:all 0.2s}
+.aFilter.on{background:var(--red);color:white;border-color:var(--red)}
+.aGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.aProduct{background:white;overflow:hidden;position:relative}
+.aProductImg{width:100%;aspect-ratio:1;object-fit:cover;background:var(--gray);display:flex;align-items:center;justify-content:center;font-size:28px}
+.aProductImg img{width:100%;height:100%;object-fit:cover}
+.aProductBody{padding:10px}
+.aBadge{display:inline-block;font-size:7px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;padding:2px 6px;margin-bottom:4px}
+.bM{background:rgba(165,0,32,0.08);color:var(--red)}
+.bT{background:rgba(201,168,76,0.1);color:#8a6520}
+.aProductName{font-size:11px;font-weight:600;color:var(--red-deep);margin-bottom:1px}
+.aProductPrice{font-family:'Cormorant Garamond',serif;font-size:14px;color:var(--red)}
+.aDelBtn{position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.4);color:white;border:none;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;transition:background 0.2s}
+.aDelBtn:hover{background:var(--red)}
+.aEmpty{grid-column:1/-1;text-align:center;padding:40px;color:var(--txt);font-size:12px}
+.aVisitBtn{display:block;text-align:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);padding:7px;font-family:'Montserrat',sans-serif;font-size:8px;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none;margin-top:6px;cursor:pointer;transition:all 0.2s}
+.aVisitBtn:hover{color:white}
+</style>
+</head>
+<body>
+
+<!-- ════ MAIN SITE ════ -->
+<div id="mainSite">
+
+<nav id="nav">
+  <a href="#" class="logo" onclick="showPage('home')">ALFENA <span>FASHION</span></a>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="openCart()" title="Cart">
+      🛍
+      <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="page-home">
+  <section class="hero">
+    <p class="hero-tag">New Collection · 2026</p>
+    <h1 class="hero-title">Dress with<br><em>intention.</em></h1>
+    <p class="hero-desc">Curated pieces for the modern woman —
+
+Modern elegance meets Moroccan heritage</p>
+    <div class="hero-btns">
+      <button class="btn-white" onclick="showPage('shop');switchTab('modern')">
+        <small style="font-size:7px;letter-spacing:0.3em;display:block;margin-bottom:2px;opacity:0.65">ALFENA</small>Modern
+      </button>
+      <button class="btn-ghost" onclick="showPage('shop');switchTab('traditional')">
+        <small style="font-size:7px;letter-spacing:0.3em;display:block;margin-bottom:2px;opacity:0.65">ALFENA</small>Haute Couture
+      </button>
+    </div>
+    <div class="hero-scroll"><div class="scroll-line"></div>Scroll</div>
+  </section>
+
+  <div class="marquee">
+    <div class="marquee-inner">
+      <span>NEW ARRIVALS</span><span>FREE SHIPPING</span><span>ALFENA FASHION</span>
+      <span>MODERN & HAUTE COUTURE</span><span>CASH ON DELIVERY</span><span>CURATED STYLE</span>
+      <span>NEW ARRIVALS</span><span>FREE SHIPPING</span><span>ALFENA FASHION</span>
+      <span>MODERN & HAUTE COUTURE</span><span>CASH ON DELIVERY</span><span>CURATED STYLE</span>
+    </div>
+  </div>
+
+  <section class="section" style="background:white">
+    <p class="sec-eyebrow">Featured</p>
+    <h2 class="sec-title">New This Week</h2>
+    <div class="grid" id="featured-grid">
+      <div class="empty">✨ Products coming soon</div>
+    </div>
+    <div style="text-align:center;margin-top:24px">
+      <button class="btn-white" style="background:var(--red);color:white;border:none;padding:13px 32px;font-family:Montserrat,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer" onclick="showPage('shop')">View All Collections</button>
+    </div>
+  </section>
+</div>
+
+<!-- SHOP PAGE -->
+<div id="page-shop" style="display:none;margin-top:60px">
+  <section class="section" style="background:white;padding-top:40px">
+    <div class="tabs">
+      <button class="tab on" id="tab-modern" onclick="switchTab('modern')">
+        <span style="font-size:7px;letter-spacing:0.3em;display:block;opacity:0.55;margin-bottom:1px">ALFENA</span>Modern
+      </button>
+      <button class="tab trad" id="tab-traditional" onclick="switchTab('traditional')">
+        <span style="font-size:7px;letter-spacing:0.3em;display:block;opacity:0.55;margin-bottom:1px">ALFENA</span>Haute Couture
+      </button>
+    </div>
+    <div class="tab-pane on" id="pane-modern">
+      <div class="grid" id="modern-grid"><div class="empty">✨ Modern collection coming soon</div></div>
+    </div>
+    <div class="tab-pane" id="pane-traditional">
+      <div class="grid" id="traditional-grid"><div class="empty">✦ Haute Couture coming soon</div></div>
+    </div>
+  </section>
+</div>
+
+<!-- CHECKOUT PAGE -->
+<div id="page-checkout" style="display:none;margin-top:60px">
+  <section class="section checkout-section">
+    <div class="checkout-wrap">
+      <p class="sec-eyebrow">Secure Order</p>
+      <h2 class="sec-title" style="margin-bottom:24px">Checkout</h2>
+
+      <div class="checkout-steps">
+        <div class="cstep on" id="csi-1"><div class="cstep-num">1</div><div class="cstep-lbl">Info</div></div>
+        <div class="cstep-line"></div>
+        <div class="cstep" id="csi-2"><div class="cstep-num">2</div><div class="cstep-lbl">Address</div></div>
+        <div class="cstep-line"></div>
+        <div class="cstep" id="csi-3"><div class="cstep-num">3</div><div class="cstep-lbl">Confirm</div></div>
+      </div>
+
+      <!-- Step 1: Personal Info -->
+      <div class="co-step on" id="co-1">
+        <div class="co-card">
+          <div class="co-card-title">Your Information</div>
+          <div class="field"><label>Full Name *</label><input type="text" id="coName" placeholder="Your full name"></div>
+          <div class="field"><label>Phone *</label><input type="tel" id="coPhone" placeholder="+212 6 00 00 00 00"></div>
+          <div class="field"><label>Email (optional)</label><input type="email" id="coEmail" placeholder="your@email.com"></div>
+        </div>
+        <button class="co-btn" onclick="coNext(2)">Continue →</button>
+      </div>
+
+      <!-- Step 2: Address -->
+      <div class="co-step" id="co-2">
+        <div class="co-card">
+          <div class="co-card-title">Delivery Address</div>
+          <div class="field"><label>City *</label><input type="text" id="coCity" placeholder="e.g. Casablanca, Rabat"></div>
+          <div class="field"><label>Full Address *</label><textarea id="coAddr" placeholder="Street, neighborhood, building, floor..."></textarea></div>
+          <div class="field"><label>Delivery Method</label>
+            <div style="display:flex;gap:8px;margin-top:4px">
+              <div class="payment-box" style="flex:1;cursor:pointer;border-color:var(--red)" id="del-std" onclick="selDel('standard')">
+                <div class="payment-icon">🚚</div>
+                <div class="payment-info"><strong>Standard</strong><span>3-5 days</span></div>
+              </div>
+              <div class="payment-box" style="flex:1;cursor:pointer;border-color:var(--mid)" id="del-exp" onclick="selDel('express')">
+                <div class="payment-icon">⚡</div>
+                <div class="payment-info"><strong>Express</strong><span>1-2 days</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="co-btn" onclick="coNext(3)">Continue →</button>
+        <button class="co-back" onclick="coNext(1)">← Back</button>
+      </div>
+
+      <!-- Step 3: Confirm -->
+      <div class="co-step" id="co-3">
+        <div class="co-card">
+          <div class="co-card-title">Payment Method</div>
+          <div class="payment-box">
+            <div class="payment-icon">💵</div>
+            <div class="payment-info">
+              <strong>Cash on Delivery</strong>
+              <span>Pay when you receive your order</span>
+            </div>
+          </div>
+        </div>
+        <div class="order-summary">
+          <div class="os-title">Order Summary</div>
+          <div id="coSummaryItems"></div>
+          <div class="os-divider"></div>
+          <div class="os-item"><span>Delivery</span><span id="coDeliveryLabel">Standard (3-5 days)</span></div>
+          <div class="os-divider"></div>
+          <div class="os-total"><span>Total</span><span id="coTotal" style="color:var(--red)">0 MAD</span></div>
+        </div>
+        <div class="co-card" style="margin-bottom:0">
+          <div class="co-card-title">Confirm Details</div>
+          <div id="coConfirmDetails" style="font-size:12px;color:var(--txt);line-height:2"></div>
+        </div>
+        <button class="co-btn" onclick="placeOrder()" style="background:var(--green)">✓ Place Order</button>
+        <button class="co-back" onclick="coNext(2)">← Back</button>
+      </div>
+
+      <!-- Success -->
+      <div class="co-step" id="co-success">
+        <div class="co-card">
+          <div class="success-box">
+            <div class="success-icon">🎉</div>
+            <div class="success-title">Order Confirmed!</div>
+            <p class="success-desc">Your order has been placed successfully.<br>We'll contact you shortly on WhatsApp to confirm your delivery.</p>
+            <button class="success-wa" onclick="sendOrderWA()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Send Order on WhatsApp
+            </button>
+          </div>
+        </div>
+        <button class="co-btn" onclick="showPage('home')" style="margin-top:8px">Continue Shopping</button>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">ALFENA <span>FASHION</span></div>
+  <p>Curated fashion for the modern woman.<br>Where Moroccan heritage meets contemporary elegance.</p>
+  <div class="footer-links">
+    <a href="#" onclick="showPage('home')">Home</a>
+    <a href="#" onclick="showPage('shop')">Shop</a>
+    <a href="#" onclick="openCart()">Cart</a>
+  </div>
+  <div class="footer-copy">© 2026 Alfena Fashion. All rights reserved.</div>
+</footer>
+
+</div>
+
+<!-- PRODUCT SHEET -->
+<div class="sheet-overlay" id="prodOverlay" onclick="closeProd()"></div>
+<div class="sheet" id="prodSheet">
+  <div class="sheet-handle"></div>
+  <div style="position:relative">
+    <button class="sheet-close" style="position:absolute;top:12px;right:16px;z-index:5;background:rgba(0,0,0,0.4);color:white;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px" onclick="closeProd()">✕</button>
+    <div id="prodImgWrap">
+    <div class="swiper-wrap" id="prodSwiper">
+      <div class="swiper-track" id="prodTrack"></div>
+      <button class="swiper-arrow swiper-prev" id="swiperPrev" onclick="swiperNav(-1)" style="display:none">‹</button>
+      <button class="swiper-arrow swiper-next" id="swiperNext" onclick="swiperNav(1)" style="display:none">›</button>
+    </div>
+    <div class="swiper-dots" id="swiperDots"></div>
+  </div>
+  </div>
+  <div class="prod-body">
+    <div class="prod-badge" id="prodBadge"></div>
+    <div class="prod-name" id="prodName"></div>
+    <div class="prod-price" id="prodPrice"></div>
+    <div class="prod-label">Size</div>
+    <div class="sizes" id="prodSizes"></div>
+    <div class="qty-row">
+      <div class="prod-label" style="margin:0">Quantity</div>
+      <div class="qty-box">
+        <button onclick="changeQty(-1)">−</button>
+        <span id="qtyVal">1</span>
+        <button onclick="changeQty(1)">+</button>
+      </div>
+    </div>
+    <div id="prodCartArea"></div>
+    <button class="ask-wa-btn" onclick="askWA()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Ask on WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- CART SHEET -->
+<div class="sheet-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="sheet" id="cartSheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <div class="sheet-title">Your Cart</div>
+    <button class="sheet-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter"></div>
+</div>
+
+<!-- ════ ADMIN PANEL ════ -->
+<div id="adminWrap">
+  <div class="aLogin" id="aLogin">
+    <div class="aLoginBox">
+      <div class="aLogo">ALFENA</div>
+      <div class="aSub">ADMIN PANEL</div>
+      <input type="password" id="aPass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="aLoginBtn" onclick="doLogin()">Enter</button>
+      <div class="aErr" id="aErr"></div>
+    </div>
+  </div>
+  <div class="aHeader">
+    <div class="aHeaderLogo">ALFENA <small>ADMIN</small></div>
+    <div class="aNav">
+      <button class="aNavBtn on" id="an-dash" onclick="aPage('dash')">📊</button>
+      <button class="aNavBtn" id="an-add" onclick="aPage('add')">➕</button>
+      <button class="aNavBtn" id="an-prods" onclick="aPage('prods')">👗</button>
+      <button class="aExitBtn" onclick="exitAdmin()">Exit</button>
+    </div>
+  </div>
+  <div class="aContent">
+
+    <div class="aPage on" id="ap-dash">
+      <div class="aPageTitle">Dashboard</div>
+      <div class="aPageSub">Alfena Fashion Admin</div>
+      <div class="aStats">
+        <div class="aStat"><div class="aStatN" id="as-total">0</div><div class="aStatL">Total</div></div>
+        <div class="aStat"><div class="aStatN" id="as-mod">0</div><div class="aStatL">Modern</div></div>
+        <div class="aStat g"><div class="aStatN" id="as-hc">0</div><div class="aStatL">Haute Couture</div></div>
+      </div>
+      <div class="aCard">
+        <h3>How to use</h3>
+        <p style="font-size:12px;color:var(--txt);line-height:2">1. Tap ➕ to add a product<br>2. Upload photo + name + price<br>3. Choose collection<br>4. Tap Add — shows on site ✅</p>
+        <button class="aAddBtn" style="margin-top:14px" onclick="aPage('add')">➕ Add Product</button>
+      </div>
+      <button class="aVisitBtn" onclick="exitAdmin()">🌐 View Website</button>
+    </div>
+
+    <div class="aPage" id="ap-add">
+      <div class="aPageTitle">Add Product</div>
+      <div class="aPageSub">Add a new item to your store</div>
+      <div class="aCard">
+        <div class="aForm">
+          <div><label class="aLabel">Product Name *</label><input type="text" id="nName" placeholder="e.g. Red Kaftan"></div>
+          <div><label class="aLabel">Price (MAD) *</label><input type="number" id="nPrice" placeholder="e.g. 450"></div>
+          <div><label class="aLabel">Collection *</label>
+            <select id="nCol">
+              <option value="">— Select —</option>
+              <option value="modern">👗 Alfena Fashion Modern</option>
+              <option value="traditional">✦ Alfena Fashion Haute Couture</option>
+            </select>
+          </div>
+          <div><label class="aLabel">Category (optional)</label><input type="text" id="nCat" placeholder="e.g. Kaftan, Dress, Top"></div>
+          <div>
+            <label class="aLabel">Photos (up to 4)</label>
+            <div class="aUpload" id="aUploadArea">
+              <input type="file" id="aPhoto" accept="image/*" multiple onchange="previewImgs(this)">
+              <div class="aUploadIcon">📸</div>
+              <div class="aUploadTxt">Tap to upload up to 4 photos</div>
+            </div>
+            <div id="aImgPrevWrap" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
+          </div>
+          <button class="aAddBtn" onclick="addProduct()">✓ Add to Store</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="aPage" id="ap-prods">
+      <div class="aPageTitle">Products</div>
+      <div class="aPageSub">Manage your store</div>
+      <div class="aFilters">
+        <button class="aFilter on" onclick="aFilter('all',this)">All</button>
+        <button class="aFilter" onclick="aFilter('modern',this)">Modern</button>
+        <button class="aFilter" onclick="aFilter('traditional',this)">Haute Couture</button>
+      </div>
+      <div class="aGrid" id="aGrid"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY='alfena_v2';
+const PASS='alfena2026';
+let cart=[];
+let curProd=null;
+let prodSize='';
+let prodQty=1;
+let delivery='standard';
+let orderData={};
+let curFilter='all';
+
+// ══════════════════════════════════════════════
+// ⚠️ CONFIG REQUIRED — fill these in before publishing
+// 1) Firebase: console.firebase.google.com → Create project →
+//    Build → Firestore Database → Create database (production mode, any region)
+//    Then: Project settings → General → "Your apps" → Web app (</>) → copy the config below.
+//    Also go to Firestore → Rules and set (so the site can read/write products):
+//      rules_version = '2';
+//      service cloud.firestore {
+//        match /databases/{database}/documents {
+//          match /alfena/{doc} { allow read, write: if true; }
+//        }
+//      }
+// 2) EmailJS: emailjs.com → sign up → Email Services → connect Gmail/Outlook →
+//    Email Templates → create one with variables order_items, order_total,
+//    customer_name, customer_phone, customer_email, customer_city,
+//    customer_address, delivery → copy Public Key, Service ID, Template ID below.
+// ══════════════════════════════════════════════
+const firebaseConfig={
+  apiKey:"AIzaSyDk2rBdstt7149liygDLvJPQNrceyFMZHw",
+  authDomain:"alfena-d4422.firebaseapp.com",
+  projectId:"alfena-d4422",
+  storageBucket:"alfena-d4422.firebasestorage.app",
+  messagingSenderId:"551846512901",
+  appId:"1:551846512901:web:c3dcdf3655dea26eef0f6c"
+};
+const EMAILJS_PUBLIC_KEY="2-z0FUs9FaOAFujBH";
+const EMAILJS_SERVICE_ID="service_ksgil2b";
+const EMAILJS_TEMPLATE_ID="template_o4ty8tl";
+const NOTIFY_EMAIL_TO="chic50.morocco@gmail.com"; // where order notifications should land
+
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+if(typeof emailjs!=='undefined')emailjs.init({publicKey:EMAILJS_PUBLIC_KEY});
+
+// ── STORAGE (Firestore, shared by every visitor — replaces localStorage)
+let cachedProds=[];
+function getProds(){return cachedProds}
+function saveProds(a){
+  cachedProds=a;
+  db.collection('alfena').doc('products').set({list:a})
+    .catch(e=>{console.error('Firestore save error:',e);toast('⚠ Save failed — check Firebase config/rules')});
+}
+db.collection('alfena').doc('products').onSnapshot(doc=>{
+  cachedProds=doc.exists?(doc.data().list||[]):[];
+  renderFeatured();
+  if(document.getElementById('page-shop'))renderShop();
+  if(document.getElementById('adminWrap').style.display==='block'){renderAGrid(curFilter);updateStats()}
+},e=>console.error('Firestore listen error:',e));
+
+// ── TOAST
+let tt;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2800)}
+
+// ── NAV SCROLL
+window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>20));
+
+// ── PAGES
+function showPage(p){
+  ['home','shop','checkout'].forEach(x=>{
+    const el=document.getElementById('page-'+x);
+    if(el)el.style.display=x===p?'block':'none';
+  });
+  window.scrollTo(0,0);
+  if(p==='shop')renderShop();
+  if(p==='home')renderFeatured();
+}
+
+// ── TABS
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('on'));
+  document.getElementById('tab-'+t).classList.add('on');
+  document.getElementById('pane-'+t).classList.add('on');
+}
+
+// ── RENDER
+function renderFeatured(){
+  const prods=getProds().slice(0,4);
+  const g=document.getElementById('featured-grid');
+  if(!prods.length){g.innerHTML='<div class="empty">✨ Products coming soon<br><small>Add from admin panel</small></div>';return}
+  g.innerHTML=prods.map(p=>prodCard(p)).join('');
+}
+function renderShop(){
+  const all=getProds();
+  const mod=all.filter(p=>p.col==='modern');
+  const trad=all.filter(p=>p.col==='traditional');
+  const mg=document.getElementById('modern-grid');
+  const tg=document.getElementById('traditional-grid');
+  mg.innerHTML=mod.length?mod.map(p=>prodCard(p)).join(''):'<div class="empty">✨ Modern collection coming soon</div>';
+  tg.innerHTML=trad.length?trad.map(p=>prodCard(p)).join(''):'<div class="empty">✦ Haute Couture coming soon</div>';
+}
+function prodCard(p){
+  return`<div class="pcard${p.soldout?' soldout':''}" onclick="openProd(${p.id})">
+    <div class="pcard-img">
+      ${(p.imgs&&p.imgs.length)?`<img src="${p.imgs[0]}" alt="${p.name}">`:(p.img?`<img src="${p.img}" alt="${p.name}">`:`<div class="pcard-placeholder">${p.col==='traditional'?'✦':'👗'}</div>`)}
+      <span class="pcard-tag ${p.col==='traditional'?'tag-hc':'tag-new'}">${p.col==='traditional'?'Haute Couture':'New'}</span>
+      ${p.soldout?'<div class="soldout-overlay"><div class="soldout-label">Sold Out</div></div>':''}
+    </div>
+    <div class="pcard-cat">${p.cat||p.col}</div>
+    <div class="pcard-name">${p.name}</div>
+    <div class="pcard-price">${p.soldout?'<span style="color:var(--mid)">Sold Out</span>':p.price+' MAD'}</div>
+  </div>`;
+}
+
+// ── PRODUCT SHEET
+function openProd(id){
+  const p=getProds().find(x=>x.id===id);
+  if(!p)return;
+  curProd=p;prodSize='';prodQty=1;
+  // Build swiper
+  const imgs=p.imgs&&p.imgs.length?p.imgs:(p.img?[p.img]:[]);
+  const track=document.getElementById('prodTrack');
+  const dots=document.getElementById('swiperDots');
+  const prev=document.getElementById('swiperPrev');
+  const next=document.getElementById('swiperNext');
+  swiperIdx=0;
+  track.innerHTML=imgs.length?imgs.map(src=>`<div class="swiper-slide"><img src="${src}" alt="${p.name}"></div>`).join(''):`<div class="swiper-slide">${p.col==='traditional'?'✦':'👗'}</div>`;
+  track.style.transform='translateX(0)';
+  dots.innerHTML=imgs.length>1?imgs.map((_,i)=>`<div class="swiper-dot${i===0?' on':''}" onclick="swiperGo(${i})"></div>`).join(''):'';
+  prev.style.display=imgs.length>1?'flex':'none';
+  next.style.display=imgs.length>1?'flex':'none';
+  const badge=document.getElementById('prodBadge');
+  badge.textContent=p.col==='traditional'?'Haute Couture':'Modern';
+  badge.style.cssText=p.col==='traditional'?'background:rgba(201,168,76,0.1);color:#8a6520':'background:rgba(165,0,32,0.08);color:var(--red)';
+  document.getElementById('prodName').textContent=p.name;
+  document.getElementById('prodPrice').textContent=p.price+' MAD';
+  document.getElementById('prodSizes').innerHTML=['XS','S','M','L','XL','Free Size'].map(s=>`<button class="sz" onclick="selSz(this,'${s}')">${s}</button>`).join('');
+  document.getElementById('qtyVal').textContent=1;
+  // Cart button
+  const cartArea=document.getElementById('prodCartArea');
+  if(p.soldout){
+    cartArea.innerHTML='<div style="background:var(--red-deep);color:white;padding:14px;text-align:center;font-size:10px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase">SOLD OUT</div>';
+  } else {
+    cartArea.innerHTML='<button class="add-cart-btn" onclick="addToCart()">Add to Cart 🛍</button>';
+  }
+  document.getElementById('prodSheet').classList.add('on');
+  document.getElementById('prodOverlay').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function closeProd(){
+  document.getElementById('prodSheet').classList.remove('on');
+  document.getElementById('prodOverlay').classList.remove('on');
+  document.body.style.overflow='';
+}
+function selSz(btn,s){
+  document.querySelectorAll('.sz').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');prodSize=s;
+}
+function changeQty(d){prodQty=Math.max(1,prodQty+d);document.getElementById('qtyVal').textContent=prodQty;}
+function addToCart(){
+  if(!prodSize){toast('Please select a size');return}
+  const existing=cart.find(c=>c.id===curProd.id&&c.size===prodSize);
+  if(existing){existing.qty+=prodQty}
+  else{cart.push({...curProd,size:prodSize,qty:prodQty})}
+  updateCartBadge();
+  closeProd();
+  toast('✓ Added to cart!');
+}
+function askWA(){
+  if(!curProd)return;
+  const sz=prodSize||'Not selected';
+  const msg=`👋 Hello Alfena Fashion!\n\nI'm interested in:\n👗 *${curProd.name}*\n💰 ${curProd.price} MAD\n📐 Size: ${sz}\n\nCan you give me more info?`;
+  window.open(`https://wa.me/212655803737?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ── CART
+function updateCartBadge(){
+  const total=cart.reduce((s,c)=>s+c.qty,0);
+  const badge=document.getElementById('cartBadge');
+  badge.textContent=total;
+  badge.classList.toggle('show',total>0);
+}
+function openCart(){
+  renderCart();
+  document.getElementById('cartSheet').classList.add('on');
+  document.getElementById('cartOverlay').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function closeCart(){
+  document.getElementById('cartSheet').classList.remove('on');
+  document.getElementById('cartOverlay').classList.remove('on');
+  document.body.style.overflow='';
+}
+function renderCart(){
+  const items=document.getElementById('cartItems');
+  const footer=document.getElementById('cartFooter');
+  if(!cart.length){
+    items.innerHTML='<div class="empty-cart">🛍 Your cart is empty<br><small>Add products to get started</small></div>';
+    footer.innerHTML='';return;
+  }
+  items.innerHTML=cart.map((c,i)=>`
+    <div class="cart-item">
+      <div class="cart-item-img">${c.img?`<img src="${c.img}" alt="${c.name}">`:(c.col==='traditional'?'✦':'👗')}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${c.name}</div>
+        <div class="cart-item-meta">Size: ${c.size} · Qty: ${c.qty}</div>
+        <div class="cart-item-price">${c.price*c.qty} MAD</div>
+      </div>
+      <button class="cart-item-del" onclick="removeFromCart(${i})">🗑</button>
+    </div>
+  `).join('');
+  const total=cart.reduce((s,c)=>s+(c.price*c.qty),0);
+  footer.innerHTML=`
+    <div class="cart-total-row">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-val">${total} MAD</span>
+    </div>
+    <button class="checkout-btn" onclick="goCheckout()">Proceed to Checkout →</button>
+  `;
+}
+function removeFromCart(i){cart.splice(i,1);updateCartBadge();renderCart();}
+function goCheckout(){
+  if(!cart.length){toast('Cart is empty');return}
+  closeCart();
+  coNext(1);
+  showPage('checkout');
+}
+
+// ── CHECKOUT
+function coNext(n){
+  // Validate
+  if(n===2){
+    const name=document.getElementById('coName').value.trim();
+    const phone=document.getElementById('coPhone').value.trim();
+    if(!name){toast('Please enter your name');return}
+    if(!phone){toast('Please enter your phone');return}
+  }
+  if(n===3){
+    const city=document.getElementById('coCity').value.trim();
+    const addr=document.getElementById('coAddr').value.trim();
+    if(!city){toast('Please enter your city');return}
+    if(!addr){toast('Please enter your address');return}
+    buildConfirm();
+  }
+  document.querySelectorAll('.co-step').forEach(s=>s.classList.remove('on'));
+  document.getElementById('co-'+n).classList.add('on');
+  document.querySelectorAll('.cstep').forEach((s,i)=>{
+    s.classList.remove('on','done');
+    if(i+1<n)s.classList.add('done');
+    if(i+1===n)s.classList.add('on');
+  });
+  window.scrollTo(0,0);
+}
+function selDel(type){
+  delivery=type;
+  document.getElementById('del-std').style.borderColor=type==='standard'?'var(--red)':'var(--mid)';
+  document.getElementById('del-exp').style.borderColor=type==='express'?'var(--red)':'var(--mid)';
+}
+function buildConfirm(){
+  const total=cart.reduce((s,c)=>s+(c.price*c.qty),0);
+  const delLabel=delivery==='express'?'⚡ Express (1-2 days)':'🚚 Standard (3-5 days)';
+  document.getElementById('coDeliveryLabel').textContent=delLabel;
+  document.getElementById('coTotal').textContent=total+' MAD';
+  document.getElementById('coSummaryItems').innerHTML=cart.map(c=>`
+    <div class="os-item"><span>${c.name} × ${c.qty} (${c.size})</span><span>${c.price*c.qty} MAD</span></div>
+  `).join('');
+  const name=document.getElementById('coName').value.trim();
+  const phone=document.getElementById('coPhone').value.trim();
+  const email=document.getElementById('coEmail').value.trim();
+  const city=document.getElementById('coCity').value.trim();
+  const addr=document.getElementById('coAddr').value.trim();
+  document.getElementById('coConfirmDetails').innerHTML=`
+    👤 <strong>${name}</strong><br>
+    📞 ${phone}${email?`<br>📧 ${email}`:''}<br>
+    🏙 ${city}<br>
+    📍 ${addr}<br>
+    🚚 ${delLabel}
+  `;
+  orderData={name,phone,email,city,addr,delivery:delLabel,total,items:cart};
+}
+function placeOrder(){
+  document.querySelectorAll('.co-step').forEach(s=>s.classList.remove('on'));
+  document.getElementById('co-success').classList.add('on');
+  document.querySelectorAll('.cstep').forEach(s=>s.classList.add('done'));
+  window.scrollTo(0,0);
+  sendOrderEmail();
+}
+function sendOrderEmail(){
+  if(typeof emailjs==='undefined'||EMAILJS_SERVICE_ID==='YOUR_EMAILJS_SERVICE_ID'){
+    console.warn('EmailJS not configured yet — order email not sent.');
+    return;
+  }
+  const items=orderData.items.map(c=>`${c.name} × ${c.qty} (Size: ${c.size}) = ${c.price*c.qty} MAD`).join('\n');
+  emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
+    name:orderData.name,
+    phone:orderData.phone,
+    email:orderData.email||'-',
+    city:orderData.city,
+    address:orderData.addr,
+    delivery:orderData.delivery,
+    items:items,
+    total:orderData.total
+  }).then(()=>console.log('Order email sent ✓'))
+    .catch(e=>console.error('EmailJS send error:',e));
+}
+function sendOrderWA(){
+  const items=orderData.items.map(c=>`  - ${c.name} × ${c.qty} (Size: ${c.size}) = ${c.price*c.qty} MAD`).join('\n');
+  const msg=`🛍 *New Order — Alfena Fashion*\n\n${items}\n\n💰 *Total:* ${orderData.total} MAD\n💵 *Payment:* Cash on Delivery\n\n👤 *Name:* ${orderData.name}\n📞 *Phone:* ${orderData.phone}${orderData.email?`\n📧 ${orderData.email}`:''}\n🏙 *City:* ${orderData.city}\n📍 *Address:* ${orderData.addr}\n🚚 *Delivery:* ${orderData.delivery}\n\n_alfenafashion.com_`;
+  window.open(`https://wa.me/212655803737?text=${encodeURIComponent(msg)}`,'_blank');
+  cart=[];updateCartBadge();
+}
+
+// ── ADMIN ROUTING
+function checkRoute(){
+  if(location.hash==='#admin'){
+    document.getElementById('mainSite').style.display='none';
+    document.getElementById('adminWrap').style.display='block';
+    updateStats();renderAGrid('all');
+  }
+}
+function exitAdmin(){
+  document.getElementById('mainSite').style.display='block';
+  document.getElementById('adminWrap').style.display='none';
+  history.pushState('','','/');
+  renderFeatured();
+}
+
+// ── ADMIN LOGIN
+function doLogin(){
+  if(document.getElementById('aPass').value===PASS){document.getElementById('aLogin').classList.add('hide')}
+  else{document.getElementById('aErr').textContent='Incorrect password'}
+}
+
+// ── ADMIN PAGES
+function aPage(n){
+  document.querySelectorAll('.aPage').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.aNavBtn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('ap-'+n).classList.add('on');
+  document.getElementById('an-'+n).classList.add('on');
+  if(n==='prods')renderAGrid(curFilter);
+  if(n==='dash')updateStats();
+}
+
+// ── ADMIN IMAGE
+let imgB64s=[];
+function previewImgs(input){
+  const files=Array.from(input.files).slice(0,4);
+  if(!files.length)return;
+  imgB64s=[];
+  const wrap=document.getElementById('aImgPrevWrap');
+  wrap.innerHTML='';
+  files.forEach((file,i)=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      // Compress image
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement('canvas');
+        const MAX=800;
+        let w=img.width,h=img.height;
+        if(w>MAX){h=h*(MAX/w);w=MAX;}
+        if(h>MAX){w=w*(MAX/h);h=MAX;}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        const compressed=canvas.toDataURL('image/jpeg',0.7);
+        imgB64s[i]=compressed;
+        const thumb=document.createElement('img');
+        thumb.src=compressed;
+        thumb.style.cssText='width:64px;height:64px;object-fit:cover;border:2px solid var(--red)';
+        wrap.appendChild(thumb);
+      };
+      img.src=e.target.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+// ── ADMIN ADD
+function addProduct(){
+  const name=document.getElementById('nName').value.trim();
+  const price=document.getElementById('nPrice').value.trim();
+  const col=document.getElementById('nCol').value;
+  const cat=document.getElementById('nCat').value.trim();
+  if(!name){toast('Enter product name');return}
+  if(!price){toast('Enter price');return}
+  if(!col){toast('Select a collection');return}
+  const prods=getProds();
+  prods.push({id:Date.now(),name,price:parseInt(price),col,cat,imgs:imgB64s.length?[...imgB64s]:[]});
+  saveProds(prods);
+  updateStats();toast('✓ Product added!');
+  document.getElementById('nName').value='';
+  document.getElementById('nPrice').value='';
+  document.getElementById('nCol').value='';
+  document.getElementById('nCat').value='';
+  document.getElementById('aPhoto').value='';
+  document.getElementById('aImgPrevWrap').innerHTML='';
+  imgB64s=[];
+}
+
+// ── ADMIN DELETE
+function delProd(id){
+  if(!confirm('Delete this product?'))return;
+  saveProds(getProds().filter(p=>p.id!==id));
+  renderAGrid(curFilter);updateStats();toast('Deleted');
+}
+
+// ── ADMIN TOGGLE SOLD OUT
+function toggleSoldOut(id){
+  const prods=getProds().map(p=>p.id===id?{...p,soldout:!p.soldout}:p);
+  saveProds(prods);
+  renderAGrid(curFilter);updateStats();
+}
+
+// ── ADMIN RENDER
+function aFilter(f,btn){
+  curFilter=f;
+  document.querySelectorAll('.aFilter').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderAGrid(f);
+}
+function renderAGrid(f){
+  let prods=getProds();
+  if(f!=='all')prods=prods.filter(p=>p.col===f);
+  const g=document.getElementById('aGrid');
+  if(!prods.length){g.innerHTML='<div class="aEmpty">No products yet.<br>Tap ➕ to add.</div>';return}
+  g.innerHTML=prods.map(p=>`
+    <div class="aProduct">
+      <div class="aProductImg" style="${p.soldout?'opacity:0.5':''}">
+        ${(p.imgs&&p.imgs.length)?`<img src="${p.imgs[0]}" alt="${p.name}">`:(p.img?`<img src="${p.img}" alt="${p.name}">`:(p.col==='traditional'?'✦':'👗'))}
+      </div>
+      <button class="aDelBtn" onclick="delProd(${p.id})">✕</button>
+      <div class="aProductBody">
+        <span class="aBadge ${p.col==='traditional'?'bT':'bM'}">${p.col==='traditional'?'Haute Couture':'Modern'}</span>
+        <div class="aProductName">${p.name}</div>
+        <div class="aProductPrice">${p.soldout?'<span style="color:var(--mid)">Sold Out</span>':p.price+' MAD'}</div>
+        <button class="toggle-btn${p.soldout?' soldout':''}" onclick="toggleSoldOut(${p.id})">${p.soldout?'✓ Sold Out — Tap to Restore':'Mark as Sold Out'}</button>
+      </div>
+    </div>
+  `).join('');
+}
+function updateStats(){
+  const p=getProds();
+  document.getElementById('as-total').textContent=p.length;
+  document.getElementById('as-mod').textContent=p.filter(x=>x.col==='modern').length;
+  document.getElementById('as-hc').textContent=p.filter(x=>x.col==='traditional').length;
+}
+
+// ── INIT
+renderFeatured();
+checkRoute();
+window.addEventListener('hashchange',checkRoute);
+</script>
+</body>
+</html>
