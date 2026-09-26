@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firebase Test</title>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<style>
+  body{margin:0;font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:20px;box-sizing:border-box}
+  #box{font-size:22px;font-weight:bold;padding:20px;border-radius:12px}
+  .pending{background:#eee;color:#333}
+  .ok{background:#c8f7c5;color:#0a5c0a}
+  .fail{background:#f7c5c5;color:#7a0a0a}
+</style>
+</head>
+<body>
+<div id="box" class="pending">⏳ Testing connection to Firebase...</div>
+<script>
+const firebaseConfig={
+  apiKey:"AIzaSyDk2rBdstt7149liygDLvJPQNrceyFMZHw",
+  authDomain:"alfena-d4422.firebaseapp.com",
+  projectId:"alfena-d4422",
+  storageBucket:"alfena-d4422.firebasestorage.app",
+  messagingSenderId:"551846512901",
+  appId:"1:551846512901:web:c3dcdf3655dea26eef0f6c"
+};
+const box=document.getElementById('box');
+try{
+  firebase.initializeApp(firebaseConfig);
+  const db=firebase.firestore();
+  db.collection('alfena').doc('test-ping').set({time:Date.now(),msg:'hello from phone'})
+    .then(()=>{
+      box.className='ok';
+      box.textContent='✅ SUCCESS! Firebase is working. Data was saved.';
+    })
+    .catch(e=>{
+      box.className='fail';
+      box.textContent='❌ FIRESTORE ERROR: '+e.code+' — '+e.message;
+    });
+}catch(e){
+  box.className='fail';
+  box.textContent='❌ SCRIPT ERROR: '+e.message;
+}
+setTimeout(()=>{
+  if(box.className==='pending'){
+    box.className='fail';
+    box.textContent='⏱️ TIMEOUT — no response after 10 seconds. Likely a network/connection block.';
+  }
+},10000);
+</script>
+</body>
+</html>
