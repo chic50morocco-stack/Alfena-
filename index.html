@@ -5,11 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ALFENA FASHION</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-<!-- Firebase (shared product storage across all visitors) -->
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
-<!-- EmailJS (automatic order emails) -->
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -582,55 +577,37 @@ let delivery='standard';
 let orderData={};
 let curFilter='all';
 
-// ══════════════════════════════════════════════
-// ⚠️ CONFIG REQUIRED — fill these in before publishing
-// 1) Firebase: console.firebase.google.com → Create project →
-//    Build → Firestore Database → Create database (production mode, any region)
-//    Then: Project settings → General → "Your apps" → Web app (</>) → copy the config below.
-//    Also go to Firestore → Rules and set (so the site can read/write products):
-//      rules_version = '2';
-//      service cloud.firestore {
-//        match /databases/{database}/documents {
-//          match /alfena/{doc} { allow read, write: if true; }
-//        }
-//      }
-// 2) EmailJS: emailjs.com → sign up → Email Services → connect Gmail/Outlook →
-//    Email Templates → create one with variables order_items, order_total,
-//    customer_name, customer_phone, customer_email, customer_city,
-//    customer_address, delivery → copy Public Key, Service ID, Template ID below.
-// ══════════════════════════════════════════════
-const firebaseConfig={
-  apiKey:"AIzaSyDk2rBdstt7149liygDLvJPQNrceyFMZHw",
-  authDomain:"alfena-d4422.firebaseapp.com",
-  projectId:"alfena-d4422",
-  storageBucket:"alfena-d4422.firebasestorage.app",
-  messagingSenderId:"551846512901",
-  appId:"1:551846512901:web:c3dcdf3655dea26eef0f6c"
-};
-const EMAILJS_PUBLIC_KEY="2-z0FUs9FaOAFujBH";
-const EMAILJS_SERVICE_ID="service_ksgil2b";
-const EMAILJS_TEMPLATE_ID="template_o4ty8tl";
-const NOTIFY_EMAIL_TO="chic50.morocco@gmail.com"; // where order notifications should land
 
-firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore();
-if(typeof emailjs!=='undefined')emailjs.init({publicKey:EMAILJS_PUBLIC_KEY});
-
-// ── STORAGE (Firestore, shared by every visitor — replaces localStorage)
-let cachedProds=[];
-function getProds(){return cachedProds}
-function saveProds(a){
-  cachedProds=a;
-  db.collection('alfena').doc('products').set({list:a})
-    .then(()=>toast('✓ Saved to cloud'))
-    .catch(e=>{console.error('Firestore save error:',e);toast('⚠ ERROR: '+e.code+' — '+e.message)});
+// ── STORAGE
+// Uses Claude's persistent shared storage when this page is running as a Claude
+// artifact (so products added in the admin panel are saved for every visitor,
+// not just the current browser/session), and falls back to localStorage otherwise.
+async function getProds(){
+  try{
+    if(window.storage){
+      const r=await window.storage.get(KEY,true);
+      return r&&r.value?JSON.parse(r.value):[];
+    }
+    return JSON.parse(localStorage.getItem(KEY))||[];
+  }catch(e){
+    console.error('getProds failed',e);
+    return [];
+  }
 }
-db.collection('alfena').doc('products').onSnapshot(doc=>{
-  cachedProds=doc.exists?(doc.data().list||[]):[];
-  renderFeatured();
-  if(document.getElementById('page-shop'))renderShop();
-  if(document.getElementById('adminWrap').style.display==='block'){renderAGrid(curFilter);updateStats()}
-},e=>console.error('Firestore listen error:',e));
+async function saveProds(a){
+  try{
+    if(window.storage){
+      await window.storage.set(KEY,JSON.stringify(a),true);
+    }else{
+      localStorage.setItem(KEY,JSON.stringify(a));
+    }
+    return true;
+  }catch(e){
+    console.error('saveProds failed',e);
+    toast('⚠ Save failed — try fewer/smaller photos');
+    return false;
+  }
+}
 
 // ── TOAST
 let tt;
@@ -659,14 +636,14 @@ function switchTab(t){
 }
 
 // ── RENDER
-function renderFeatured(){
-  const prods=getProds().slice(0,4);
+async function renderFeatured(){
+  const prods=(await getProds()).slice(0,4);
   const g=document.getElementById('featured-grid');
   if(!prods.length){g.innerHTML='<div class="empty">✨ Products coming soon<br><small>Add from admin panel</small></div>';return}
   g.innerHTML=prods.map(p=>prodCard(p)).join('');
 }
-function renderShop(){
-  const all=getProds();
+async function renderShop(){
+  const all=await getProds();
   const mod=all.filter(p=>p.col==='modern');
   const trad=all.filter(p=>p.col==='traditional');
   const mg=document.getElementById('modern-grid');
@@ -688,8 +665,8 @@ function prodCard(p){
 }
 
 // ── PRODUCT SHEET
-function openProd(id){
-  const p=getProds().find(x=>x.id===id);
+async function openProd(id){
+  const p=(await getProds()).find(x=>x.id===id);
   if(!p)return;
   curProd=p;prodSize='';prodQty=1;
   // Build swiper
@@ -858,25 +835,6 @@ function placeOrder(){
   document.getElementById('co-success').classList.add('on');
   document.querySelectorAll('.cstep').forEach(s=>s.classList.add('done'));
   window.scrollTo(0,0);
-  sendOrderEmail();
-}
-function sendOrderEmail(){
-  if(typeof emailjs==='undefined'||EMAILJS_SERVICE_ID==='YOUR_EMAILJS_SERVICE_ID'){
-    console.warn('EmailJS not configured yet — order email not sent.');
-    return;
-  }
-  const items=orderData.items.map(c=>`${c.name} × ${c.qty} (Size: ${c.size}) = ${c.price*c.qty} MAD`).join('\n');
-  emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
-    name:orderData.name,
-    phone:orderData.phone,
-    email:orderData.email||'-',
-    city:orderData.city,
-    address:orderData.addr,
-    delivery:orderData.delivery,
-    items:items,
-    total:orderData.total
-  }).then(()=>console.log('Order email sent ✓'))
-    .catch(e=>console.error('EmailJS send error:',e));
 }
 function sendOrderWA(){
   const items=orderData.items.map(c=>`  - ${c.name} × ${c.qty} (Size: ${c.size}) = ${c.price*c.qty} MAD`).join('\n');
@@ -886,18 +844,18 @@ function sendOrderWA(){
 }
 
 // ── ADMIN ROUTING
-function checkRoute(){
+async function checkRoute(){
   if(location.hash==='#admin'){
     document.getElementById('mainSite').style.display='none';
     document.getElementById('adminWrap').style.display='block';
-    updateStats();renderAGrid('all');
+    await updateStats();await renderAGrid('all');
   }
 }
-function exitAdmin(){
+async function exitAdmin(){
   document.getElementById('mainSite').style.display='block';
   document.getElementById('adminWrap').style.display='none';
   history.pushState('','','/');
-  renderFeatured();
+  await renderFeatured();
 }
 
 // ── ADMIN LOGIN
@@ -907,13 +865,13 @@ function doLogin(){
 }
 
 // ── ADMIN PAGES
-function aPage(n){
+async function aPage(n){
   document.querySelectorAll('.aPage').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.aNavBtn').forEach(b=>b.classList.remove('on'));
   document.getElementById('ap-'+n).classList.add('on');
   document.getElementById('an-'+n).classList.add('on');
-  if(n==='prods')renderAGrid(curFilter);
-  if(n==='dash')updateStats();
+  if(n==='prods')await renderAGrid(curFilter);
+  if(n==='dash')await updateStats();
 }
 
 // ── ADMIN IMAGE
@@ -951,7 +909,7 @@ function previewImgs(input){
 }
 
 // ── ADMIN ADD
-function addProduct(){
+async function addProduct(){
   const name=document.getElementById('nName').value.trim();
   const price=document.getElementById('nPrice').value.trim();
   const col=document.getElementById('nCol').value;
@@ -959,10 +917,13 @@ function addProduct(){
   if(!name){toast('Enter product name');return}
   if(!price){toast('Enter price');return}
   if(!col){toast('Select a collection');return}
-  const prods=getProds();
+  const prods=await getProds();
   prods.push({id:Date.now(),name,price:parseInt(price),col,cat,imgs:imgB64s.length?[...imgB64s]:[]});
-  saveProds(prods);
-  updateStats();toast('✓ Product added!');
+  const ok=await saveProds(prods);
+  if(!ok)return; // error toast already shown by saveProds
+  await updateStats();
+  await renderAGrid(curFilter);
+  toast('✓ Product added!');
   document.getElementById('nName').value='';
   document.getElementById('nPrice').value='';
   document.getElementById('nCol').value='';
@@ -973,28 +934,34 @@ function addProduct(){
 }
 
 // ── ADMIN DELETE
-function delProd(id){
+async function delProd(id){
   if(!confirm('Delete this product?'))return;
-  saveProds(getProds().filter(p=>p.id!==id));
-  renderAGrid(curFilter);updateStats();toast('Deleted');
+  const ok=await saveProds((await getProds()).filter(p=>p.id!==id));
+  if(!ok)return;
+  await renderAGrid(curFilter);await updateStats();toast('Deleted');
 }
 
-// ── ADMIN TOGGLE SOLD OUT
-function toggleSoldOut(id){
-  const prods=getProds().map(p=>p.id===id?{...p,soldout:!p.soldout}:p);
-  saveProds(prods);
-  renderAGrid(curFilter);updateStats();
+// ── ADMIN SOLD OUT TOGGLE
+async function toggleSoldOut(id){
+  const prods=await getProds();
+  const p=prods.find(x=>x.id===id);
+  if(!p)return;
+  p.soldout=!p.soldout;
+  const ok=await saveProds(prods);
+  if(!ok)return;
+  await renderAGrid(curFilter);
+  toast(p.soldout?'Marked as sold out':'Restored to store');
 }
 
 // ── ADMIN RENDER
-function aFilter(f,btn){
+async function aFilter(f,btn){
   curFilter=f;
   document.querySelectorAll('.aFilter').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  renderAGrid(f);
+  await renderAGrid(f);
 }
-function renderAGrid(f){
-  let prods=getProds();
+async function renderAGrid(f){
+  let prods=await getProds();
   if(f!=='all')prods=prods.filter(p=>p.col===f);
   const g=document.getElementById('aGrid');
   if(!prods.length){g.innerHTML='<div class="aEmpty">No products yet.<br>Tap ➕ to add.</div>';return}
@@ -1013,8 +980,8 @@ function renderAGrid(f){
     </div>
   `).join('');
 }
-function updateStats(){
-  const p=getProds();
+async function updateStats(){
+  const p=await getProds();
   document.getElementById('as-total').textContent=p.length;
   document.getElementById('as-mod').textContent=p.filter(x=>x.col==='modern').length;
   document.getElementById('as-hc').textContent=p.filter(x=>x.col==='traditional').length;
