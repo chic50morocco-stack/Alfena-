@@ -247,6 +247,7 @@ footer p{font-size:11px;line-height:1.8;margin-bottom:16px}
 .aVisitBtn{display:block;text-align:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);padding:7px;font-family:'Montserrat',sans-serif;font-size:8px;letter-spacing:0.18em;text-transform:uppercase;text-decoration:none;margin-top:6px;cursor:pointer;transition:all 0.2s}
 .aVisitBtn:hover{color:white}
 </style>
+<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -569,6 +570,11 @@ Modern elegance meets Moroccan heritage</p>
 <script>
 const KEY='alfena_v2';
 const PASS='alfena2026';
+// ── EMAILJS
+const EMAILJS_PUBLIC_KEY='2-z0FUs9FaOAFujBH';
+const EMAILJS_SERVICE_ID='service_ksgil2b';
+const EMAILJS_TEMPLATE_ID='template_o4ty8tl';
+if(typeof emailjs!=='undefined')emailjs.init({publicKey:EMAILJS_PUBLIC_KEY});
 let cart=[];
 let curProd=null;
 let prodSize='';
@@ -832,6 +838,20 @@ function placeOrder(){
   document.getElementById('co-success').classList.add('on');
   document.querySelectorAll('.cstep').forEach(s=>s.classList.add('done'));
   window.scrollTo(0,0);
+  sendOrderEmail();
+}
+function sendOrderEmail(){
+  if(typeof emailjs==='undefined'){console.error('EmailJS not loaded');return}
+  const itemsText=orderData.items.map(c=>`${c.name} x${c.qty} (${c.size}) - ${c.price*c.qty} MAD`).join('\n');
+  emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
+    name:orderData.name,
+    phone:orderData.phone,
+    city:orderData.city,
+    address:orderData.addr,
+    delivery:orderData.delivery,
+    items:itemsText,
+    total:orderData.total+' MAD'
+  }).then(()=>console.log('✓ Order email sent')).catch(e=>console.error('EmailJS send failed',e));
 }
 function sendOrderWA(){
   const items=orderData.items.map(c=>`  - ${c.name} × ${c.qty} (Size: ${c.size}) = ${c.price*c.qty} MAD`).join('\n');
