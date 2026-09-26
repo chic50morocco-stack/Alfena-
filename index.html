@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ALFENA FASHION</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- Firebase (shared product storage across all visitors) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<!-- EmailJS (automatic order emails) -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -577,10 +582,54 @@ let delivery='standard';
 let orderData={};
 let curFilter='all';
 
+// ══════════════════════════════════════════════
+// ⚠️ CONFIG REQUIRED — fill these in before publishing
+// 1) Firebase: console.firebase.google.com → Create project →
+//    Build → Firestore Database → Create database (production mode, any region)
+//    Then: Project settings → General → "Your apps" → Web app (</>) → copy the config below.
+//    Also go to Firestore → Rules and set (so the site can read/write products):
+//      rules_version = '2';
+//      service cloud.firestore {
+//        match /databases/{database}/documents {
+//          match /alfena/{doc} { allow read, write: if true; }
+//        }
+//      }
+// 2) EmailJS: emailjs.com → sign up → Email Services → connect Gmail/Outlook →
+//    Email Templates → create one with variables order_items, order_total,
+//    customer_name, customer_phone, customer_email, customer_city,
+//    customer_address, delivery → copy Public Key, Service ID, Template ID below.
+// ══════════════════════════════════════════════
+const firebaseConfig={
+  apiKey:"AIzaSyDk2rBdstt7149liygDLvJPQNrceyFMZHw",
+  authDomain:"alfena-d4422.firebaseapp.com",
+  projectId:"alfena-d4422",
+  storageBucket:"alfena-d4422.firebasestorage.app",
+  messagingSenderId:"551846512901",
+  appId:"1:551846512901:web:c3dcdf3655dea26eef0f6c"
+};
+const EMAILJS_PUBLIC_KEY="2-z0FUs9FaOAFujBH";
+const EMAILJS_SERVICE_ID="service_ksgil2b";
+const EMAILJS_TEMPLATE_ID="template_o4ty8tl";
+const NOTIFY_EMAIL_TO="chic50.morocco@gmail.com"; // where order notifications should land
 
-// ── STORAGE
-function getProds(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch{return[]}}
-function saveProds(a){localStorage.setItem(KEY,JSON.stringify(a))}
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+if(typeof emailjs!=='undefined')emailjs.init({publicKey:EMAILJS_PUBLIC_KEY});
+
+// ── STORAGE (Firestore, shared by every visitor — replaces localStorage)
+let cachedProds=[];
+function getProds(){return cachedProds}
+function saveProds(a){
+  cachedProds=a;
+  db.collection('alfena').doc('products').set({list:a})
+    .catch(e=>{console.error('Firestore save error:',e);toast('⚠ Save failed — check Firebase config/rules')});
+}
+db.collection('alfena').doc('products').onSnapshot(doc=>{
+  cachedProds=doc.exists?(doc.data().list||[]):[];
+  renderFeatured();
+  if(document.getElementById('page-shop'))renderShop();
+  if(document.getElementById('adminWrap').style.display==='block'){renderAGrid(curFilter);updateStats()}
+},e=>console.error('Firestore listen error:',e));
 
 // ── TOAST
 let tt;
@@ -808,6 +857,25 @@ function placeOrder(){
   document.getElementById('co-success').classList.add('on');
   document.querySelectorAll('.cstep').forEach(s=>s.classList.add('done'));
   window.scrollTo(0,0);
+  sendOrderEmail();
+}
+function sendOrderEmail(){
+  if(typeof emailjs==='undefined'||EMAILJS_SERVICE_ID==='YOUR_EMAILJS_SERVICE_ID'){
+    console.warn('EmailJS not configured yet — order email not sent.');
+    return;
+  }
+  const items=orderData.items.map(c=>`${c.name} × ${c.qty} (Size: ${c.size}) = ${c.price*c.qty} MAD`).join('\n');
+  emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
+    name:orderData.name,
+    phone:orderData.phone,
+    email:orderData.email||'-',
+    city:orderData.city,
+    address:orderData.addr,
+    delivery:orderData.delivery,
+    items:items,
+    total:orderData.total
+  }).then(()=>console.log('Order email sent ✓'))
+    .catch(e=>console.error('EmailJS send error:',e));
 }
 function sendOrderWA(){
   const items=orderData.items.map(c=>`  - ${c.name} × ${c.qty} (Size: ${c.size}) = ${c.price*c.qty} MAD`).join('\n');
@@ -910,6 +978,13 @@ function delProd(id){
   renderAGrid(curFilter);updateStats();toast('Deleted');
 }
 
+// ── ADMIN TOGGLE SOLD OUT
+function toggleSoldOut(id){
+  const prods=getProds().map(p=>p.id===id?{...p,soldout:!p.soldout}:p);
+  saveProds(prods);
+  renderAGrid(curFilter);updateStats();
+}
+
 // ── ADMIN RENDER
 function aFilter(f,btn){
   curFilter=f;
@@ -949,114 +1024,5 @@ renderFeatured();
 checkRoute();
 window.addEventListener('hashchange',checkRoute);
 </script>
-  <!-- Firebase Libraries -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-
-<script>
-  // Firebase Configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDk2rBdstt7149liygDLvJPQNrceyFMZHw",
-    authDomain: "alfena-d4422.firebaseapp.com",
-    databaseURL: "https://alfena-d4422-default-rtdb.firebaseio.com",
-    projectId: "alfena-d4422",
-    storageBucket: "alfena-d4422.firebasestorage.app",
-    messagingSenderId: "551846512901",
-    appId: "1:551846512901:web:c3dcdf3655dea26eef0f6c",
-    measurementId: "G-W7TN7H2VV8"
-  };
-
-  if (typeof firebase !== 'undefined' && !firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-
-  const db = firebase.database();
-
-  // 1. Live Sync Products from Firebase
-  db.ref('products').on('value', function(snapshot) {
-    const data = snapshot.val();
-    if (data) {
-      const liveProducts = Object.keys(data).map(function(key) {
-        return Object.assign({ id: key }, data[key]);
-      });
-      localStorage.setItem('alfena_products', JSON.stringify(liveProducts));
-      if (typeof products !== 'undefined') products = liveProducts;
-      if (typeof renderProducts === 'function') renderProducts();
-      if (typeof renderFeatured === 'function') renderFeatured();
-      if (typeof renderShop === 'function') renderShop();
-    }
-  });
-
-  // 2. Safe Auto Sync when clicking ADD TO STORE
-  document.addEventListener('click', function(e) {
-    if (e.target && e.target.textContent && e.target.textContent.indexOf('ADD TO STORE') !== -1) {
-      setTimeout(function() {
-        const localProds = localStorage.getItem('alfena_products') || localStorage.getItem('products');
-        if (localProds) {
-          try {
-            const parsed = JSON.parse(localProds);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              db.ref('products').set(parsed);
-            }
-          } catch(err) {
-            console.error("Firebase sync error:", err);
-          }
-        }
-      }, 700);
-    }
-  });
-
-  // 3. Intercept Order Submission to Firebase & Telegram
-  const originalSubmitOrder = window.submitOrder || window.handleCheckout;
-  window.submitOrder = async function(e) {
-    if (e && e.preventDefault) e.preventDefault();
-    
-    const nameInput = document.getElementById('cust-name') || document.getElementById('name');
-    const phoneInput = document.getElementById('cust-phone') || document.getElementById('phone');
-    const addressInput = document.getElementById('cust-address') || document.getElementById('address');
-    const cityInput = document.getElementById('cust-city') || document.getElementById('city');
-
-    const orderData = {
-      name: nameInput ? nameInput.value : 'N/A',
-      phone: phoneInput ? phoneInput.value : 'N/A',
-      address: addressInput ? addressInput.value : 'N/A',
-      city: cityInput ? cityInput.value : '',
-      items: typeof cart !== 'undefined' ? JSON.stringify(cart) : 'Cart items',
-      total: typeof getCartTotal === 'function' ? getCartTotal() : 'N/A',
-      timestamp: firebase.database.ServerValue.TIMESTAMP
-    };
-
-    try {
-      await db.ref('orders').push(orderData);
-
-      const TELEGRAM_BOT_TOKEN = '8947265870:AAEkQqoLSfUb15eqEbBApNhXtVd3nftgZ1k';
-      const TELEGRAM_CHAT_ID = '896389277';
-
-      const message = `🛍️ **New Order Received!**\n\n` +
-                      `👤 **Customer:** ${orderData.name}\n` +
-                      `📞 **Phone:** ${orderData.phone}\n` +
-                      `📍 **Address:** ${orderData.address}, ${orderData.city}\n` +
-                      `📦 **Items:** ${orderData.items}\n` +
-                      `💰 **Total:** ${orderData.total}`;
-
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID,
-          text: message,
-          parse_mode: 'Markdown'
-        })
-      });
-
-      alert("Thank you! Your order has been placed successfully.");
-    } catch (err) {
-      console.error("Order Submission Error:", err);
-    }
-
-    if (typeof originalSubmitOrder === 'function') originalSubmitOrder(e);
-  };
-</script>
-
 </body>
 </html>
