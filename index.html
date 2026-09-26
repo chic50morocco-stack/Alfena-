@@ -622,7 +622,8 @@ function getProds(){return cachedProds}
 function saveProds(a){
   cachedProds=a;
   db.collection('alfena').doc('products').set({list:a})
-    .catch(e=>{console.error('Firestore save error:',e);toast('⚠ Save failed — check Firebase config/rules')});
+    .then(()=>toast('✓ Saved to cloud'))
+    .catch(e=>{console.error('Firestore save error:',e);toast('⚠ ERROR: '+e.code+' — '+e.message)});
 }
 db.collection('alfena').doc('products').onSnapshot(doc=>{
   cachedProds=doc.exists?(doc.data().list||[]):[];
