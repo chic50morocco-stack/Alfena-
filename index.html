@@ -595,6 +595,7 @@ async function getProds(){
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();
     const arr=data?Object.values(data).filter(Boolean):[];
+    arr.sort((a,b)=>(b.id||0)-(a.id||0)); // newest products first
     try{localStorage.setItem(KEY,JSON.stringify(arr));}catch{}
     return arr;
   }catch(e){
